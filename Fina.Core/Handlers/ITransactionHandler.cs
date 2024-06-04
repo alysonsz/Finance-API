@@ -1,20 +1,14 @@
-﻿using Fina.Core.Models;
-using Fina.Core.Responses;
+using Fina.Core.Models;
 using Fina.Core.Requests.Transactions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Fina.Core.Responses;
 
-namespace Fina.Core.Handlers
+namespace Fina.Core.Handlers;
+
+public interface ITransactionHandler
 {
-    public interface ITransactionHandler
-    {
-        Task<Response<Transaction?>> CreateAsync(CreateTransactionRequest request);
-        Task<Response<Transaction?>> UpdateAsync(UpdateTransactionRequest request);
-        Task<Response<Transaction?>> DeleteAsync(DeleteTransactionRequest request);
-        Task<Response<Transaction?>> GetByIdAsync(GetTransactionByIdRequest request);
-        Task<PagedResponse<List<Transaction>?>> GetByPeriodAsync(GetTransactionByIdRequest request);
-    }
+    Task<Response<Transaction?>> CreateAsync(CreateTransactionRequest request);
+    Task<Response<Transaction?>> UpdateAsync(UpdateTransactionRequest request);
+    Task<Response<Transaction?>> DeleteAsync(DeleteTransactionRequest request);
+    Task<Response<Transaction?>> GetByIdAsync(GetTransactionByIdRequest request);
+    Task<PagedResponse<List<Transaction>?>> GetByPeriodAsync(GetTransactionsByPeriodRequest request);
 }
