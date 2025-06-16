@@ -1,0 +1,38 @@
+﻿@page "/categorias"
+
+<MudText Typo="Typo.h4">Categorias</MudText>
+
+<div class="d-flex justify-end mb-4">
+    <MudButton 
+        Href="/categorias/criar"
+        Variant="Variant.Filled" 
+        Color="Color.Primary" 
+        StartIcon="@Icons.Material.Filled.Add">
+        Nova Categoria
+    </MudButton>
+</div>
+
+@if (IsBusy)
+{
+    <div class="d-flex justify-center my-4">
+        <MudProgressCircular Indeterminate="true" />
+    </div>
+}
+else
+{
+    <MudTable Items="@Categories" Hover="true" Striped="true" Bordered="true">
+        <HeaderContent>
+            <MudTh>Id</MudTh>
+            <MudTh>Título</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Id">@context.Id</MudTd>
+            <MudTd DataLabel="Título">@context.Title</MudTd>
+            <MudTd>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">Editar</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="@(() => OnDeleteButtonClickedAsync(context.Id, context.Title))">Excluir</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}

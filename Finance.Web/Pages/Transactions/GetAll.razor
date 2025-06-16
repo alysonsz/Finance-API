@@ -1,0 +1,53 @@
+﻿@page "/transacoes"
+@using Finance.Domain.Requests.Transactions
+@using Finance.Domain.Common
+
+<MudText Typo="Typo.h4">Transações</MudText>
+
+<div class="d-flex flex-wrap flex-grow-1 gap-4">
+    <MudDatePicker Label="Data Início" @bind-Date="StartDate" />
+    <MudDatePicker Label="Data Fim" @bind-Date="EndDate" />
+    <MudButton Variant="Variant.Filled"
+               OnClick="GetTransactionsAsync"
+               StartIcon="@Icons.Material.Filled.Search">
+        Buscar
+    </MudButton>
+</div>
+
+<div class="d-flex justify-end mt-4 mb-4">
+    <MudButton Href="/transacoes/criar"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add">
+        Nova Transação
+    </MudButton>
+</div>
+
+@if (IsBusy)
+{
+    <div class="d-flex justify-center my-4">
+        <MudProgressCircular Indeterminate="true" />
+    </div>
+}
+else
+{
+    <MudTable Items="@Transactions" Hover="true" Striped="true" Bordered="true">
+        <HeaderContent>
+            <MudTh>Id</MudTh>
+            <MudTh>Título</MudTh>
+            <MudTh>Data</MudTh>
+            <MudTh>Valor</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Id">@context.Id</MudTd>
+            <MudTd DataLabel="Título">@context.Title</MudTd>
+            <MudTd DataLabel="Data">@context.PaidOrReceivedAt?.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd DataLabel="Valor">@context.Amount.ToString("C")</MudTd>
+            <MudTd>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">Editar</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small">Excluir</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
