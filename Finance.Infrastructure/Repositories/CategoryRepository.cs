@@ -1,11 +1,11 @@
-﻿using Finance.Domain.Interfaces.Repositories;
+﻿using Finance.Application.Interfaces.Repositories;
 using Finance.Domain.Models;
 using Finance.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Finance.Infrastructure.Repositories;
 
-public class CategoryRepository(AppDbContext context) : ICategoryRepository
+public class CategoryRepository(FinanceDbContext context) : ICategoryRepository
 {
     public async Task<Category?> CreateAsync(Category category)
     {

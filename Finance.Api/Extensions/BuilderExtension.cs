@@ -1,6 +1,6 @@
-﻿using Finance.Domain.Interfaces.Handlers;
-using Finance.Application.Handlers;
-using Finance.Domain.Interfaces.Repositories;
+﻿using Finance.Application.Handlers;
+using Finance.Application.Interfaces.Handlers;
+using Finance.Application.Interfaces.Repositories;
 using Finance.Infrastructure.Data;
 using Finance.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +16,7 @@ public static class BuilderExtension
 
     public static void AddDatabase(this WebApplicationBuilder builder)
     {
-        builder.Services.AddDbContext<AppDbContext>(o =>
+        builder.Services.AddDbContext<FinanceDbContext>(o =>
             o.UseSqlServer(ApiConfiguration.ConnectionString));
     }
 
@@ -26,10 +26,7 @@ public static class BuilderExtension
         options => options.AddPolicy(
                 ApiConfiguration.CorsPolicyName,
                 policy => policy
-                    .WithOrigins([
-                        "http://localhost:5200",
-                        "https://localhost:7087"
-                    ])
+                    .WithOrigins("https://localhost:7243")
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials()
