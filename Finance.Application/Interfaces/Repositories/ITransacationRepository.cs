@@ -1,6 +1,6 @@
 ﻿using Finance.Domain.Models;
 
-namespace Finance.Domain.Interfaces.Repositories;
+namespace Finance.Application.Interfaces.Repositories;
 
 public interface ITransactionRepository
 {

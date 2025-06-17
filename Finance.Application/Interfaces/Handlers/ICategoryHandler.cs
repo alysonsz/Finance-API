@@ -2,7 +2,7 @@
 using Finance.Domain.Requests.Categories;
 using Finance.Domain.Responses;
 
-namespace Finance.Domain.Interfaces.Handlers;
+namespace Finance.Application.Interfaces.Handlers;
 
 public interface ICategoryHandler
 {
