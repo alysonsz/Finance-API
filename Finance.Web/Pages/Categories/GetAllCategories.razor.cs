@@ -1,6 +1,6 @@
 ﻿using Finance.Application.Interfaces.Handlers;
+using Finance.Application.Requests.Categories;
 using Finance.Domain.Models;
-using Finance.Domain.Requests.Categories;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 

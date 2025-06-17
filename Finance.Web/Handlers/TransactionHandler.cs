@@ -1,7 +1,7 @@
 ﻿using Finance.Application.Interfaces.Handlers;
+using Finance.Application.Requests.Transactions;
+using Finance.Application.Responses;
 using Finance.Domain.Models;
-using Finance.Domain.Requests.Transactions;
-using Finance.Domain.Responses;
 using System.Net.Http.Json;
 
 namespace Finance.Web.Handlers;

@@ -1,7 +1,7 @@
 ﻿using Finance.Application.Interfaces.Handlers;
+using Finance.Application.Requests.Transactions;
 using Finance.Domain.Common;
 using Finance.Domain.Models;
-using Finance.Domain.Requests.Transactions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 

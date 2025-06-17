@@ -1,5 +1,5 @@
 ﻿using Finance.Application.Interfaces.Handlers;
-using Finance.Domain.Requests.Categories;
+using Finance.Application.Requests.Categories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Finance.Api.Controllers;

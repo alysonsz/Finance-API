@@ -1,6 +1,6 @@
-﻿using Finance.Domain.Models;
-using Finance.Domain.Requests.Categories;
-using Finance.Domain.Responses;
+﻿using Finance.Application.Requests.Categories;
+using Finance.Application.Responses;
+using Finance.Domain.Models;
 
 namespace Finance.Application.Interfaces.Handlers;
 
