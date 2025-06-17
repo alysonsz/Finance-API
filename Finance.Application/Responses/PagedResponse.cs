@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Finance.Domain.Responses;
+namespace Finance.Application.Responses;
 
 public class PagedResponse<TData> : Response<TData>
 {

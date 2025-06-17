@@ -1,4 +1,4 @@
-﻿namespace Finance.Domain.Requests.Categories;
+﻿namespace Finance.Application.Requests.Categories;
 
 public class DeleteCategoryRequest : Request
 {

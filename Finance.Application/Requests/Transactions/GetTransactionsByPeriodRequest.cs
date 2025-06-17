@@ -1,4 +1,4 @@
-﻿namespace Finance.Domain.Requests.Transactions;
+﻿namespace Finance.Application.Requests.Transactions;
 
 public class GetTransactionsByPeriodRequest : PagedRequest
 {

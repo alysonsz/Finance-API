@@ -1,15 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Finance.Domain.Enums;
 
-namespace Finance.Domain.Requests.Transactions;
+namespace Finance.Application.Requests.Transactions;
 
-public class CreateTransactionRequest : Request
+public class UpdateTransactionRequest : Request
 {
+    public long Id { get; set; }
+
     [Required(ErrorMessage = "Título inválido")]
     public string Title { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Tipo inválido")]
-    public ETransactionType Type { get; set; } = ETransactionType.Withdraw;
+    public ETransactionType Type { get; set; }
 
     [Required(ErrorMessage = "Valor inválido")]
     public decimal Amount { get; set; }

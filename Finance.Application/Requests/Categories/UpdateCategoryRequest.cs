@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Finance.Domain.Requests.Categories;
+namespace Finance.Application.Requests.Categories;
 
 public class UpdateCategoryRequest : Request
 {
