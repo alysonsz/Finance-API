@@ -1,4 +1,4 @@
-using Finance.Domain.Interfaces.Handlers;
+using Finance.Application.Interfaces.Handlers;
 using Finance.Web;
 using Finance.Web.Handlers;
 using Microsoft.AspNetCore.Components.Web;
@@ -15,7 +15,7 @@ builder.Services.AddHttpClient(
     WebConfiguration.HttpClientName,
     opt =>
     {
-        opt.BaseAddress = new Uri("https://localhost:7295");
+        opt.BaseAddress = new Uri("https://localhost:7279");
     });
 
 builder.Services.AddTransient<ICategoryHandler, CategoryHandler>();

@@ -1,6 +1,5 @@
 using Finance.Api;
 using Finance.Api.Extensions;
-using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +21,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors(ApiConfiguration.CorsPolicyName);
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
