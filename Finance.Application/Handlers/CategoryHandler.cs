@@ -1,8 +1,8 @@
-﻿using Finance.Domain.Interfaces.Handlers;
+﻿using Finance.Application.Interfaces.Handlers;
+using Finance.Application.Interfaces.Repositories;
+using Finance.Domain.Models;
 using Finance.Domain.Requests.Categories;
 using Finance.Domain.Responses;
-using Finance.Domain.Interfaces.Repositories;
-using Finance.Domain.Models;
 
 namespace Finance.Application.Handlers;
 

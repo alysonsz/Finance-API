@@ -1,10 +1,10 @@
-﻿using Finance.Domain.Interfaces.Handlers;
-using Finance.Domain.Requests.Transactions;
-using Finance.Domain.Responses;
+﻿using Finance.Application.Interfaces.Handlers;
+using Finance.Application.Interfaces.Repositories;
 using Finance.Domain.Common;
 using Finance.Domain.Enums;
-using Finance.Domain.Interfaces.Repositories;
 using Finance.Domain.Models;
+using Finance.Domain.Requests.Transactions;
+using Finance.Domain.Responses;
 
 namespace Finance.Application.Handlers;
 

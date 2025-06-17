@@ -1,4 +1,4 @@
-﻿using Finance.Domain.Interfaces.Handlers;
+﻿using Finance.Application.Interfaces.Handlers;
 using Finance.Domain.Models;
 using Finance.Domain.Requests.Transactions;
 using Finance.Domain.Responses;
