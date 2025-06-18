@@ -1,9 +1,11 @@
 ﻿using Finance.Application.Interfaces.Handlers;
 using Finance.Application.Requests.Categories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Finance.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("v1/categories")]
 public class CategoriesController(ICategoryHandler handler) : ControllerBase

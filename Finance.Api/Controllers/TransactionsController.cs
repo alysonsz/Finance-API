@@ -1,9 +1,11 @@
 ﻿using Finance.Application.Interfaces.Handlers;
 using Finance.Application.Requests.Transactions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Finance.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("v1/transactions")]
 public class TransactionsController(ITransactionHandler handler) : ControllerBase
