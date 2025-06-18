@@ -7,6 +7,6 @@ public interface ITransactionRepository
     Task<Transaction?> CreateAsync(Transaction transaction);
     Task<Transaction?> UpdateAsync(Transaction transaction);
     Task<Transaction?> DeleteAsync(Transaction transaction);
-    Task<Transaction?> GetByIdAsync(long id, string userId);
-    Task<List<Transaction>?> GetByPeriodAsync(string userId, DateTime? startDate, DateTime? endDate);
+    Task<Transaction?> GetByIdAsync(long id, long userId);
+    Task<List<Transaction>?> GetByPeriodAsync(long userId, DateTime? startDate, DateTime? endDate);
 }

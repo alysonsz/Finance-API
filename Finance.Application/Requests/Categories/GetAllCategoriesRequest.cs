@@ -2,4 +2,5 @@
 
 public class GetAllCategoriesRequest : PagedRequest
 {
+    public long UserId { get; set; }
 }

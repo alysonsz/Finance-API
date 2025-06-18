@@ -5,6 +5,8 @@ namespace Finance.Application.Requests.Transactions;
 
 public class CreateTransactionRequest : Request
 {
+    public long UserId { get; set; }
+
     [Required(ErrorMessage = "Título inválido")]
     public string Title { get; set; } = string.Empty;
 

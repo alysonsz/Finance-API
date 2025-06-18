@@ -28,12 +28,12 @@ public class CategoryRepository(FinanceDbContext context) : ICategoryRepository
         return category;
     }
 
-    public async Task<Category?> GetByIdAsync(long id, string userId)
+    public async Task<Category?> GetByIdAsync(long id, long userId)
         => await context.Categories
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
 
-    public async Task<List<Category>?> GetAllAsync(string userId)
+    public async Task<List<Category>?> GetAllAsync(long userId)
         => await context.Categories
             .AsNoTracking()
             .Where(c => c.UserId == userId)
