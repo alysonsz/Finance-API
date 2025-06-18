@@ -24,7 +24,12 @@ public class CategoryMapping : IEntityTypeConfiguration<Category>
 
         builder.Property(x => x.UserId)
             .IsRequired(true)
-            .HasColumnType("VARCHAR")
+            .HasColumnType("BIGINT")
             .HasMaxLength(160);
+
+        builder.HasOne(c => c.User)
+           .WithMany(u => u.Categories)
+           .HasForeignKey(c => c.UserId)
+           .OnDelete(DeleteBehavior.Cascade);
     }
 }

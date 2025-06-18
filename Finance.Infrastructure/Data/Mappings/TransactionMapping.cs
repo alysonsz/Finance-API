@@ -33,7 +33,17 @@ public class TransactionMapping : IEntityTypeConfiguration<Transaction>
 
         builder.Property(x => x.UserId)
             .IsRequired(true)
-            .HasColumnType("VARCHAR")
+            .HasColumnType("BIGINT")
             .HasMaxLength(160);
+
+        builder.HasOne(t => t.User)
+            .WithMany(u => u.Transactions)
+            .HasForeignKey(t => t.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(t => t.Category)
+            .WithMany()
+            .HasForeignKey(t => t.CategoryId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
