@@ -10,6 +10,7 @@ builder.AddDocumentation();
 builder.AddServices();
 
 builder.Services.AddControllers();
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
 var app = builder.Build();
 
@@ -21,6 +22,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors(ApiConfiguration.CorsPolicyName);
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
