@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Finance.Infrastructure.Migrations
 {
     [DbContext(typeof(FinanceDbContext))]
-    [Migration("20250616135133_InitialCreate")]
+    [Migration("20250618195420_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -42,12 +42,13 @@ namespace Finance.Infrastructure.Migrations
                         .HasMaxLength(80)
                         .HasColumnType("NVARCHAR");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
+                    b.Property<long>("UserId")
                         .HasMaxLength(160)
-                        .HasColumnType("VARCHAR");
+                        .HasColumnType("BIGINT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Category", (string)null);
                 });
@@ -80,16 +81,56 @@ namespace Finance.Infrastructure.Migrations
                     b.Property<short>("Type")
                         .HasColumnType("SMALLINT");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
+                    b.Property<long>("UserId")
                         .HasMaxLength(160)
-                        .HasColumnType("VARCHAR");
+                        .HasColumnType("BIGINT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("Transaction", (string)null);
+                });
+
+            modelBuilder.Entity("Finance.Domain.Models.User", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("Finance.Domain.Models.Category", b =>
+                {
+                    b.HasOne("Finance.Domain.Models.User", "User")
+                        .WithMany("Categories")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Finance.Domain.Models.Transaction", b =>
@@ -100,7 +141,22 @@ namespace Finance.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Finance.Domain.Models.User", "User")
+                        .WithMany("Transactions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Category");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Models.User", b =>
+                {
+                    b.Navigation("Categories");
+
+                    b.Navigation("Transactions");
                 });
 #pragma warning restore 612, 618
         }
