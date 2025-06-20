@@ -1,4 +1,5 @@
-﻿using Finance.Application.Interfaces.Handlers;
+﻿using Finance.API.Extensions;
+using Finance.Application.Interfaces.Handlers;
 using Finance.Application.Requests.Transactions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,44 +14,46 @@ public class TransactionsController(ITransactionHandler handler) : ControllerBas
     [HttpPost]
     public async Task<IActionResult> CreateAsync(CreateTransactionRequest request)
     {
-        request.UserId = ApiConfiguration.UserId;
+        var userId = User.GetUserId();
+        request.UserId = userId;
         var response = await handler.CreateAsync(request);
-        return response.IsSuccess
-            ? Created($"v1/transactions/{response.Data?.Id}", response)
-            : BadRequest(response);
+        return this.FromResponse(response);
     }
 
     [HttpPut("{id:long}")]
     public async Task<IActionResult> UpdateAsync(UpdateTransactionRequest request, [FromRoute] long id)
     {
-        request.UserId = ApiConfiguration.UserId;
+        var userId = User.GetUserId();
+        request.UserId = userId;
         request.Id = id;
         var response = await handler.UpdateAsync(request);
-        return response.IsSuccess ? Ok(response) : BadRequest(response);
+        return this.FromResponse(response);
     }
 
     [HttpDelete("{id:long}")]
     public async Task<IActionResult> DeleteAsync([FromRoute] long id)
     {
+        var userId = User.GetUserId();
         var request = new DeleteTransactionRequest
         {
-            UserId = ApiConfiguration.UserId,
+            UserId = userId,
             Id = id
         };
         var response = await handler.DeleteAsync(request);
-        return response.IsSuccess ? Ok(response) : BadRequest(response);
+        return this.FromResponse(response);
     }
 
     [HttpGet("{id:long}")]
     public async Task<IActionResult> GetByIdAsync([FromRoute] long id)
     {
+        var userId = User.GetUserId();
         var request = new GetTransactionByIdRequest
         {
-            UserId = ApiConfiguration.UserId,
+            UserId = userId,
             Id = id
         };
         var response = await handler.GetByIdAsync(request);
-        return response.IsSuccess ? Ok(response) : BadRequest(response);
+        return this.FromResponse(response);
     }
 
     [HttpGet]
@@ -60,15 +63,16 @@ public class TransactionsController(ITransactionHandler handler) : ControllerBas
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 25)
     {
+        var userId = User.GetUserId();
         var request = new GetTransactionsByPeriodRequest
         {
-            UserId = ApiConfiguration.UserId,
+            UserId = userId,
             StartDate = startDate,
             EndDate = endDate,
             PageNumber = pageNumber,
             PageSize = pageSize
         };
         var response = await handler.GetByPeriodAsync(request);
-        return response.IsSuccess ? Ok(response) : BadRequest(response);
+        return this.FromResponse(response);
     }
 }
