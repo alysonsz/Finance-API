@@ -1,8 +1,8 @@
-using Finance.Application.Interfaces.Handlers;
-using Finance.Web;
-using Finance.Web.Handlers;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Finance.Web;
+using Finance.Application.Interfaces.Handlers;
+using Finance.Web.Handlers;
 using MudBlazor.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
