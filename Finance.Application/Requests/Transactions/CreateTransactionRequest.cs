@@ -1,11 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Finance.Domain.Enums;
+using Finance.Domain.Models;
 
 namespace Finance.Application.Requests.Transactions;
 
 public class CreateTransactionRequest : Request
 {
-    public long UserId { get; set; }
+    public new long UserId { get; set; }
 
     [Required(ErrorMessage = "Título inválido")]
     public string Title { get; set; } = string.Empty;
