@@ -1,4 +1,6 @@
-﻿namespace Finance.Domain.Models;
+﻿using Finance.Domain.Models.DTOs;
+
+namespace Finance.Domain.Models;
 
 public class User
 {
