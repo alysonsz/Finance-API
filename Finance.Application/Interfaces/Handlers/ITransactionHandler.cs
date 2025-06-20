@@ -1,14 +1,14 @@
 ﻿using Finance.Application.Requests.Transactions;
 using Finance.Application.Responses;
-using Finance.Domain.Models;
+using Finance.Domain.Models.DTOs;
 
 namespace Finance.Application.Interfaces.Handlers;
 
 public interface ITransactionHandler
 {
-    Task<Response<Transaction?>> CreateAsync(CreateTransactionRequest request);
-    Task<Response<Transaction?>> UpdateAsync(UpdateTransactionRequest request);
-    Task<Response<Transaction?>> DeleteAsync(DeleteTransactionRequest request);
-    Task<Response<Transaction?>> GetByIdAsync(GetTransactionByIdRequest request);
-    Task<PagedResponse<List<Transaction>?>> GetByPeriodAsync(GetTransactionsByPeriodRequest request);
+    Task<Response<TransactionDto?>> CreateAsync(CreateTransactionRequest request);
+    Task<Response<TransactionDto?>> UpdateAsync(UpdateTransactionRequest request);
+    Task<Response<TransactionDto?>> DeleteAsync(DeleteTransactionRequest request);
+    Task<Response<TransactionDto?>> GetByIdAsync(GetTransactionByIdRequest request);
+    Task<PagedResponse<List<TransactionDto>?>> GetByPeriodAsync(GetTransactionsByPeriodRequest request);
 }

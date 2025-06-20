@@ -5,15 +5,22 @@ using Finance.Application.Responses;
 using Finance.Domain.Common;
 using Finance.Domain.Enums;
 using Finance.Domain.Models;
+using Finance.Domain.Models.DTOs;
 
 namespace Finance.Application.Handlers;
 
-public class TransactionHandler(ITransactionRepository repository) : ITransactionHandler
+public class TransactionHandler(
+    ITransactionRepository transactionRepository,
+    ICategoryRepository categoryRepository) : ITransactionHandler
 {
-    public async Task<Response<Transaction?>> CreateAsync(CreateTransactionRequest request)
+    public async Task<Response<TransactionDto?>> CreateAsync(CreateTransactionRequest request)
     {
-        if (request is { Type: ETransactionType.Withdraw, Amount: >= 0 })
+        if (request.Type == ETransactionType.Withdraw && request.Amount >= 0)
             request.Amount *= -1;
+
+        var category = await categoryRepository.GetByIdAsync(request.CategoryId, request.UserId);
+        if (category is null)
+            return new Response<TransactionDto?>(null, 404, "Categoria não encontrada");
 
         var transaction = new Transaction
         {
@@ -28,23 +35,26 @@ public class TransactionHandler(ITransactionRepository repository) : ITransactio
 
         try
         {
-            await repository.CreateAsync(transaction);
-            return new Response<Transaction?>(transaction, 201, "Transação criada com sucesso!");
+            await transactionRepository.CreateAsync(transaction);
+            var dto = MapToDto(transaction, category);
+            return new Response<TransactionDto?>(dto, 201, "Transação criada com sucesso!");
         }
         catch
         {
-            return new Response<Transaction?>(null, 500, "Não foi possível criar sua transação");
+            return new Response<TransactionDto?>(null, 500, "Não foi possível criar sua transação");
         }
     }
 
-    public async Task<Response<Transaction?>> UpdateAsync(UpdateTransactionRequest request)
+    public async Task<Response<TransactionDto?>> UpdateAsync(UpdateTransactionRequest request)
     {
-        if (request is { Type: ETransactionType.Withdraw, Amount: >= 0 }) request.Amount *= -1;
+        if (request.Type == ETransactionType.Withdraw && request.Amount >= 0)
+            request.Amount *= -1;
 
         try
         {
-            var transaction = await repository.GetByIdAsync(request.Id, request.UserId);
-            if (transaction is null) return new Response<Transaction?>(null, 404, "Transação não encontrada");
+            var transaction = await transactionRepository.GetByIdAsync(request.Id, request.UserId);
+            if (transaction is null)
+                return new Response<TransactionDto?>(null, 404, "Transação não encontrada");
 
             transaction.CategoryId = request.CategoryId;
             transaction.Amount = request.Amount;
@@ -52,58 +62,111 @@ public class TransactionHandler(ITransactionRepository repository) : ITransactio
             transaction.Type = request.Type;
             transaction.PaidOrReceivedAt = request.PaidOrReceivedAt;
 
-            await repository.UpdateAsync(transaction);
-            return new Response<Transaction?>(transaction, 200, "Transação atualizada com sucesso!");
+            await transactionRepository.UpdateAsync(transaction);
+
+            var category = await categoryRepository.GetByIdAsync(transaction.CategoryId, transaction.UserId);
+            if (category is null)
+                return new Response<TransactionDto?>(null, 404, "Categoria vinculada não encontrada");
+
+            var dto = MapToDto(transaction, category);
+            return new Response<TransactionDto?>(dto, 200, "Transação atualizada com sucesso!");
         }
-        catch { return new Response<Transaction?>(null, 500, "Não foi possível atualizar sua transação"); }
+        catch
+        {
+            return new Response<TransactionDto?>(null, 500, "Não foi possível atualizar sua transação");
+        }
     }
 
-    public async Task<Response<Transaction?>> DeleteAsync(DeleteTransactionRequest request)
+    public async Task<Response<TransactionDto?>> DeleteAsync(DeleteTransactionRequest request)
     {
         try
         {
-            var transaction = await repository.GetByIdAsync(request.Id, request.UserId);
-            if (transaction is null) return new Response<Transaction?>(null, 404, "Transação não encontrada");
+            var transaction = await transactionRepository.GetByIdAsync(request.Id, request.UserId);
+            if (transaction is null)
+                return new Response<TransactionDto?>(null, 404, "Transação não encontrada");
 
-            await repository.DeleteAsync(transaction);
-            return new Response<Transaction?>(transaction, 200, "Transação excluída com sucesso!");
+            var category = await categoryRepository.GetByIdAsync(transaction.CategoryId, transaction.UserId);
+            if (category is null)
+                return new Response<TransactionDto?>(null, 404, "Categoria vinculada não encontrada");
+
+            await transactionRepository.DeleteAsync(transaction);
+
+            var dto = MapToDto(transaction, category);
+            return new Response<TransactionDto?>(dto, 200, "Transação excluída com sucesso!");
         }
-        catch { return new Response<Transaction?>(null, 500, "Não foi possível excluir sua transação"); }
+        catch
+        {
+            return new Response<TransactionDto?>(null, 500, "Não foi possível excluir sua transação");
+        }
     }
 
-    public async Task<Response<Transaction?>> GetByIdAsync(GetTransactionByIdRequest request)
+    public async Task<Response<TransactionDto?>> GetByIdAsync(GetTransactionByIdRequest request)
     {
         try
         {
-            var transaction = await repository.GetByIdAsync(request.Id, request.UserId);
-            return transaction is null
-                ? new Response<Transaction?>(null, 404, "Transação não encontrada")
-                : new Response<Transaction?>(transaction);
+            var transaction = await transactionRepository.GetByIdAsync(request.Id, request.UserId);
+            if (transaction is null)
+                return new Response<TransactionDto?>(null, 404, "Transação não encontrada");
+
+            var category = await categoryRepository.GetByIdAsync(transaction.CategoryId, transaction.UserId);
+            if (category is null)
+                return new Response<TransactionDto?>(null, 404, "Categoria vinculada não encontrada");
+
+            var dto = MapToDto(transaction, category);
+            return new Response<TransactionDto?>(dto);
         }
-        catch { return new Response<Transaction?>(null, 500, "Não foi possível recuperar sua transação"); }
+        catch
+        {
+            return new Response<TransactionDto?>(null, 500, "Não foi possível recuperar sua transação");
+        }
     }
 
-    public async Task<PagedResponse<List<Transaction>?>> GetByPeriodAsync(GetTransactionsByPeriodRequest request)
+    public async Task<PagedResponse<List<TransactionDto>?>> GetByPeriodAsync(GetTransactionsByPeriodRequest request)
     {
         try
         {
             request.StartDate ??= DateTime.Now.GetFirstDay();
             request.EndDate ??= DateTime.Now.GetLastDay();
 
-            var allTransactions = await repository.GetByPeriodAsync(request.UserId, request.StartDate, request.EndDate);
-
+            var allTransactions = await transactionRepository.GetByPeriodAsync(request.UserId, request.StartDate, request.EndDate);
             if (allTransactions == null)
+                return new PagedResponse<List<TransactionDto>?>(message: "Não foi possível obter as transações", code: 500);
+
+            var pagedTransactions = allTransactions
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToList();
+
+            var dtos = new List<TransactionDto>();
+            foreach (var t in pagedTransactions)
             {
-                return new PagedResponse<List<Transaction>?>("Não foi possível obter as transações", 500);
+                var category = await categoryRepository.GetByIdAsync(t.CategoryId, t.UserId);
+                if (category is null) continue;
+
+                dtos.Add(MapToDto(t, category));
             }
 
-            var pagedData = allTransactions.Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize).ToList();
-
-            return new PagedResponse<List<Transaction>?>(pagedData, allTransactions.Count, request.PageNumber, request.PageSize);
+            return new PagedResponse<List<TransactionDto>?>(dtos, allTransactions.Count, request.PageNumber, request.PageSize);
         }
         catch
         {
-            return new PagedResponse<List<Transaction>?>("Não foi possível obter as transações", 500);
+            return new PagedResponse<List<TransactionDto>?>(message: "Não foi possível obter as transações", code: 500);
         }
     }
+
+    private static TransactionDto MapToDto(Transaction transaction, Category category)
+        => new()
+        {
+            Id = transaction.Id,
+            Title = transaction.Title,
+            Amount = transaction.Amount,
+            Type = transaction.Type,
+            PaidOrReceivedAt = transaction.PaidOrReceivedAt,
+            CreatedAt = transaction.CreatedAt,
+            Category = new CategoryDto
+            {
+                Id = category.Id,
+                Name = category.Title
+            }
+        };
 }
