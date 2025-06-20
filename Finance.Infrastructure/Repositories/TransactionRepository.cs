@@ -31,12 +31,14 @@ public class TransactionRepository(FinanceDbContext context) : ITransactionRepos
     public async Task<Transaction?> GetByIdAsync(long id, long userId)
         => await context.Transactions
             .AsNoTracking()
+            .Include(c => c.Category)
             .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
 
     public async Task<List<Transaction>?> GetByPeriodAsync(long userId, DateTime? startDate, DateTime? endDate)
     {
         return await context.Transactions
             .AsNoTracking()
+            .Include(c => c.Category)
             .Where(t => t.UserId == userId &&
                         t.PaidOrReceivedAt >= startDate &&
                         t.PaidOrReceivedAt <= endDate)
