@@ -1,6 +1,6 @@
 ﻿using Finance.Domain.Models;
 
-namespace Finance.Application.Interfaces.Repositories;
+namespace Finance.Contracts.Interfaces.Repositories;
 
 public interface IUserRepository
 {

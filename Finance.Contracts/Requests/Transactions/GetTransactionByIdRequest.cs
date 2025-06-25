@@ -1,4 +1,4 @@
-﻿namespace Finance.Application.Requests.Transactions;
+﻿namespace Finance.Contracts.Requests.Transactions;
 
 public class GetTransactionByIdRequest : Request
 {

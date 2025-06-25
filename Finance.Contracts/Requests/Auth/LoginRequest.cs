@@ -1,4 +1,4 @@
-﻿namespace Finance.Application.Requests.Auth;
+﻿namespace Finance.Contracts.Requests.Auth;
 
 public class LoginRequest
 {

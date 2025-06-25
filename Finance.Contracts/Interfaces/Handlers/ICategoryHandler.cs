@@ -1,8 +1,8 @@
-﻿using Finance.Application.Requests.Categories;
-using Finance.Application.Responses;
+﻿using Finance.Contracts.Requests.Categories;
+using Finance.Contracts.Responses;
 using Finance.Domain.Models.DTOs;
 
-namespace Finance.Application.Interfaces.Handlers;
+namespace Finance.Contracts.Interfaces.Handlers;
 
 public interface ICategoryHandler
 {

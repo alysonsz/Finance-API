@@ -1,8 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Finance.Domain.Enums;
-using Finance.Domain.Models;
 
-namespace Finance.Application.Requests.Transactions;
+namespace Finance.Contracts.Requests.Transactions;
 
 public class CreateTransactionRequest : Request
 {

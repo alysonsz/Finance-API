@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Finance.Domain.Enums;
 
-namespace Finance.Application.Requests.Transactions;
+namespace Finance.Contracts.Requests.Transactions;
 
 public class UpdateTransactionRequest : Request
 {

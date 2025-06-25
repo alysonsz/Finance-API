@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Finance.Api", "Finance.Api\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Finance.Web", "Finance.Web\Finance.Web.csproj", "{7B54F781-A0E2-4B5E-9FBE-4EC4B2D3A378}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Finance.Contracts", "Finance.Contracts\Finance.Contracts.csproj", "{0DA20E45-E08B-4960-9453-B0663E0E672C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{7B54F781-A0E2-4B5E-9FBE-4EC4B2D3A378}.Release|x64.Build.0 = Release|Any CPU
 		{7B54F781-A0E2-4B5E-9FBE-4EC4B2D3A378}.Release|x86.ActiveCfg = Release|Any CPU
 		{7B54F781-A0E2-4B5E-9FBE-4EC4B2D3A378}.Release|x86.Build.0 = Release|Any CPU
+		{0DA20E45-E08B-4960-9453-B0663E0E672C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DA20E45-E08B-4960-9453-B0663E0E672C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DA20E45-E08B-4960-9453-B0663E0E672C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0DA20E45-E08B-4960-9453-B0663E0E672C}.Debug|x64.Build.0 = Debug|Any CPU
+		{0DA20E45-E08B-4960-9453-B0663E0E672C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0DA20E45-E08B-4960-9453-B0663E0E672C}.Debug|x86.Build.0 = Debug|Any CPU
+		{0DA20E45-E08B-4960-9453-B0663E0E672C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DA20E45-E08B-4960-9453-B0663E0E672C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DA20E45-E08B-4960-9453-B0663E0E672C}.Release|x64.ActiveCfg = Release|Any CPU
+		{0DA20E45-E08B-4960-9453-B0663E0E672C}.Release|x64.Build.0 = Release|Any CPU
+		{0DA20E45-E08B-4960-9453-B0663E0E672C}.Release|x86.ActiveCfg = Release|Any CPU
+		{0DA20E45-E08B-4960-9453-B0663E0E672C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

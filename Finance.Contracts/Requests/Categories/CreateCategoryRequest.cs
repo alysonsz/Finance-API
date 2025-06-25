@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Finance.Application.Requests.Categories;
+namespace Finance.Contracts.Requests.Categories;
 
 public class CreateCategoryRequest : Request
 {

@@ -1,7 +1,7 @@
-﻿using Finance.Application.Requests.Auth;
-using Finance.Application.Responses;
+﻿using Finance.Contracts.Requests.Auth;
+using Finance.Contracts.Responses;
 
-namespace Finance.Application.Interfaces.Handlers;
+namespace Finance.Contracts.Interfaces.Handlers;
 
 public interface IUserHandler
 {

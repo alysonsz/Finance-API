@@ -1,4 +1,4 @@
-﻿namespace Finance.Application.Requests;
+﻿namespace Finance.Contracts.Requests;
 
 public abstract class PagedRequest : Request
 {

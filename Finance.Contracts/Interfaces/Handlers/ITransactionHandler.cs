@@ -1,8 +1,8 @@
-﻿using Finance.Application.Requests.Transactions;
-using Finance.Application.Responses;
+﻿using Finance.Contracts.Requests.Transactions;
+using Finance.Contracts.Responses;
 using Finance.Domain.Models.DTOs;
 
-namespace Finance.Application.Interfaces.Handlers;
+namespace Finance.Contracts.Interfaces.Handlers;
 
 public interface ITransactionHandler
 {

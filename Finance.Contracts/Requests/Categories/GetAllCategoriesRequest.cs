@@ -1,4 +1,4 @@
-﻿namespace Finance.Application.Requests.Categories;
+﻿namespace Finance.Contracts.Requests.Categories;
 
 public class GetAllCategoriesRequest : PagedRequest
 {
