@@ -1,6 +1,8 @@
 ﻿@page "/transacoes"
 @using Finance.Contracts.Requests.Transactions
 @using Finance.Domain.Common
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 @inherits Finance.Web.Pages.Transactions.GetAll
 
 <MudText Typo="Typo.h4">Transações</MudText>

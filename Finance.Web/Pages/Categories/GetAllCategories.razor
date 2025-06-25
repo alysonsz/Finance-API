@@ -1,4 +1,6 @@
 ﻿@page "/categorias"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 @inherits Finance.Web.Pages.Categories.GetAll
 
 <MudText Typo="Typo.h4">Categorias</MudText>

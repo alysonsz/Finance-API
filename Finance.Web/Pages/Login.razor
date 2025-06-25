@@ -1,0 +1,41 @@
+﻿@page "/login"
+@using Finance.Contracts.Requests.Auth
+@inject Finance.Web.Handlers.AuthHandler AuthHandler
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<h3>Login</h3>
+
+<MudPaper Class="d-flex flex-column mx-auto my-12 p-6" MaxWidth="400px" Elevation="8">
+    <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">Login</MudText>
+
+    <MudTextField Label="Email" @bind-Value="loginModel.Email" Variant="Variant.Filled" Required="true" />
+    <MudTextField Label="Password" @bind-Value="loginModel.Password" Variant="Variant.Filled" InputType="InputType.Password" Required="true" />
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="HandleLogin" Class="mt-4" FullWidth>
+        Entrar
+    </MudButton>
+
+    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-3">
+        Ainda não tem uma conta?
+        <MudLink Href="/register">Registre-se</MudLink>
+    </MudText>
+</MudPaper>
+
+@code {
+    private LoginRequest loginModel = new();
+
+    private async Task HandleLogin()
+    {
+        var success = await AuthHandler.LoginAsync(loginModel);
+
+        if (success)
+        {
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            Snackbar.Add("Login inválido. Verifique seu e-mail e senha.", Severity.Error);
+        }
+    }
+}
