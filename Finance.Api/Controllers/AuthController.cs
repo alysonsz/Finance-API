@@ -6,14 +6,9 @@ namespace Finance.Api.Controllers;
 
 [ApiController]
 [Route("v1/auth")]
-public class AuthController : ControllerBase
+public class AuthController(IUserHandler userHandler) : ControllerBase
 {
-    private readonly IUserHandler _userHandler;
-
-    public AuthController(IUserHandler userHandler)
-    {
-        _userHandler = userHandler;
-    }
+    private readonly IUserHandler _userHandler = userHandler;
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)

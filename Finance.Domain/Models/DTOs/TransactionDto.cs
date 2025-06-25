@@ -10,6 +10,6 @@ public class TransactionDto
     public ETransactionType Type { get; set; }
     public DateTime? PaidOrReceivedAt { get; set; }
     public DateTime CreatedAt { get; set; }
-    public CategoryDto Category { get; set; }
+    public CategoryDto? Category { get; set; }
 }
 

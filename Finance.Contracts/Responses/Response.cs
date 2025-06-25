@@ -40,6 +40,6 @@ public class Response<TData> : Response
     public static Response<TData> Success(TData? data, string? message = "Operação realizada com sucesso.")
         => new(data, 200, message);
 
-    public static Response<TData> Fail(string? message)
+    public static new Response<TData> Fail(string? message)
         => new(default, 400, message);
 }
