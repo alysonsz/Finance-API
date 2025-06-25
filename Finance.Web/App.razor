@@ -1,12 +1,19 @@
-﻿@using Finance.Web.Layout
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Finance.Web.Pages
+@using Finance.Web.Layout
 
 <CascadingAuthenticationState>
+    <MudThemeProvider />
     <MudDialogProvider />
     <MudSnackbarProvider />
-    <MudPopoverProvider />
+
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
-            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <RedirectToLogin />
+                </NotAuthorized>
+            </AuthorizeRouteView>
             <FocusOnNavigate RouteData="@routeData" Selector="h1" />
         </Found>
         <NotFound>
@@ -16,4 +23,3 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
-
