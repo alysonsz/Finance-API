@@ -1,7 +1,7 @@
-﻿using Finance.Application.Interfaces.Handlers;
-using Finance.Application.Requests.Transactions;
+﻿using Finance.Contracts.Interfaces.Handlers;
+using Finance.Contracts.Requests.Transactions;
 using Finance.Domain.Common;
-using Finance.Domain.Models;
+using Finance.Domain.Models.DTOs;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -11,7 +11,7 @@ public partial class GetAll : ComponentBase
 {
     #region Properties
     public bool IsBusy { get; set; } = false;
-    public List<Transaction> Transactions { get; set; } = [];
+    public List<TransactionDto> Transactions { get; set; } = [];
     public DateTime? StartDate { get; set; } = DateTime.Now.GetFirstDay();
     public DateTime? EndDate { get; set; } = DateTime.Now.GetLastDay();
     #endregion
@@ -44,7 +44,7 @@ public partial class GetAll : ComponentBase
             if (result.IsSuccess && result.Data is not null)
                 Transactions = result.Data;
             else
-                Transactions = new List<Transaction>();
+                Transactions = [];
 
             if (!result.IsSuccess)
                 Snackbar.Add(result.Message, Severity.Error);

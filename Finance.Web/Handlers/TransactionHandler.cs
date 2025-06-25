@@ -1,7 +1,7 @@
-﻿using Finance.Application.Interfaces.Handlers;
-using Finance.Application.Requests.Transactions;
-using Finance.Application.Responses;
-using Finance.Domain.Models;
+﻿using Finance.Contracts.Interfaces.Handlers;
+using Finance.Contracts.Requests.Transactions;
+using Finance.Contracts.Responses;
+using Finance.Domain.Models.DTOs;
 using System.Net.Http.Json;
 
 namespace Finance.Web.Handlers;
@@ -10,39 +10,47 @@ public class TransactionHandler(IHttpClientFactory httpClientFactory) : ITransac
 {
     private readonly HttpClient _client = httpClientFactory.CreateClient(WebConfiguration.HttpClientName);
 
-    public async Task<Response<Transaction?>> CreateAsync(CreateTransactionRequest request)
+    public async Task<Response<TransactionDto?>> CreateAsync(CreateTransactionRequest request)
+        => await PostAsync<CreateTransactionRequest, TransactionDto?>("v1/transactions", request, "Falha ao criar a transação");
+
+    public async Task<Response<TransactionDto?>> UpdateAsync(UpdateTransactionRequest request)
+        => await PutAsync<UpdateTransactionRequest, TransactionDto?>($"v1/transactions/{request.Id}", request, "Falha ao atualizar a transação");
+
+    public async Task<Response<TransactionDto?>> DeleteAsync(DeleteTransactionRequest request)
+        => await DeleteAsync<TransactionDto?>($"v1/transactions/{request.Id}", "Falha ao excluir a transação");
+
+    public async Task<Response<TransactionDto?>> GetByIdAsync(GetTransactionByIdRequest request)
+        => await GetAsync<TransactionDto?>($"v1/transactions/{request.Id}", "Não foi possível obter a transação");
+
+    public async Task<PagedResponse<List<TransactionDto>?>> GetByPeriodAsync(GetTransactionsByPeriodRequest request)
     {
-        var result = await _client.PostAsJsonAsync("v1/transactions", request);
-        return await result.Content.ReadFromJsonAsync<Response<Transaction?>>()
-               ?? new Response<Transaction?>(null, 400, "Falha ao criar a transação");
+        var start = request.StartDate?.ToString("yyyy-MM-dd") ?? "";
+        var end = request.EndDate?.ToString("yyyy-MM-dd") ?? "";
+
+        var url = $"v1/transactions?startDate={start}&endDate={end}&pageNumber={request.PageNumber}&pageSize={request.PageSize}";
+
+        return await _client.GetFromJsonAsync<PagedResponse<List<TransactionDto>?>>(url)
+               ?? new PagedResponse<List<TransactionDto>?>("Não foi possível obter as transações", 500);
     }
 
-    public async Task<Response<Transaction?>> UpdateAsync(UpdateTransactionRequest request)
+    private async Task<Response<T?>> GetAsync<T>(string url, string error)
+        => await _client.GetFromJsonAsync<Response<T?>>(url) ?? new Response<T?>(default, 500, error);
+
+    private async Task<Response<T?>> PostAsync<TIn, T>(string url, TIn body, string error)
     {
-        var result = await _client.PutAsJsonAsync($"v1/transactions/{request.Id}", request);
-        return await result.Content.ReadFromJsonAsync<Response<Transaction?>>()
-               ?? new Response<Transaction?>(null, 400, "Falha ao atualizar a transação");
+        var res = await _client.PostAsJsonAsync(url, body);
+        return await res.Content.ReadFromJsonAsync<Response<T?>>() ?? new Response<T?>(default, 500, error);
     }
 
-    public async Task<Response<Transaction?>> DeleteAsync(DeleteTransactionRequest request)
+    private async Task<Response<T?>> PutAsync<TIn, T>(string url, TIn body, string error)
     {
-        var result = await _client.DeleteAsync($"v1/transactions/{request.Id}");
-        return await result.Content.ReadFromJsonAsync<Response<Transaction?>>()
-               ?? new Response<Transaction?>(null, 400, "Falha ao excluir a transação");
+        var res = await _client.PutAsJsonAsync(url, body);
+        return await res.Content.ReadFromJsonAsync<Response<T?>>() ?? new Response<T?>(default, 500, error);
     }
 
-    public async Task<Response<Transaction?>> GetByIdAsync(GetTransactionByIdRequest request)
-        => await _client.GetFromJsonAsync<Response<Transaction?>>($"v1/transactions/{request.Id}")
-           ?? new Response<Transaction?>(null, 400, "Não foi possível obter a transação");
-
-    public async Task<PagedResponse<List<Transaction>?>> GetByPeriodAsync(GetTransactionsByPeriodRequest request)
+    private async Task<Response<T?>> DeleteAsync<T>(string url, string error)
     {
-        var startDate = request.StartDate?.ToString("yyyy-MM-dd") ?? "";
-        var endDate = request.EndDate?.ToString("yyyy-MM-dd") ?? "";
-
-        var url = $"v1/transactions?startDate={startDate}&endDate={endDate}&pageNumber={request.PageNumber}&pageSize={request.PageSize}";
-
-        return await _client.GetFromJsonAsync<PagedResponse<List<Transaction>?>>(url)
-               ?? new PagedResponse<List<Transaction>?>("Não foi possível obter as transações", 500);
+        var res = await _client.DeleteAsync(url);
+        return await res.Content.ReadFromJsonAsync<Response<T?>>() ?? new Response<T?>(default, 500, error);
     }
 }

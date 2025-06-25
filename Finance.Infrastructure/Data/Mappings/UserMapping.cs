@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Finance.Infrastructure.Mappings;
+namespace Finance.Infrastructure.Data.Mappings;
 
 public class UserMapping : IEntityTypeConfiguration<User>
 {

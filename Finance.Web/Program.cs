@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Finance.Web;
-using Finance.Application.Interfaces.Handlers;
+using Finance.Contracts.Interfaces.Handlers;
 using Finance.Web.Handlers;
 using MudBlazor.Services;
 

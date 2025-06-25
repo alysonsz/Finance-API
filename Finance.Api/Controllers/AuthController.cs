@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Finance.Application.Interfaces.Handlers;
-using Finance.Application.Requests.Auth;
+﻿using Finance.Contracts.Interfaces.Handlers;
+using Finance.Contracts.Requests.Auth;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Finance.Api.Controllers;
 

@@ -1,6 +1,6 @@
 ﻿using Finance.API.Extensions;
-using Finance.Application.Interfaces.Handlers;
-using Finance.Application.Requests.Transactions;
+using Finance.Contracts.Interfaces.Handlers;
+using Finance.Contracts.Requests.Transactions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

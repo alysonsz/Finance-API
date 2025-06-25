@@ -1,6 +1,6 @@
 ﻿using Finance.Application.Handlers;
-using Finance.Application.Interfaces.Handlers;
-using Finance.Application.Interfaces.Repositories;
+using Finance.Contracts.Interfaces.Handlers;
+using Finance.Contracts.Interfaces.Repositories;
 using Finance.Infrastructure.Data;
 using Finance.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

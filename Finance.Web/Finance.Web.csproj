@@ -1,4 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
@@ -9,11 +10,12 @@
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-		<PackageReference Include="MudBlazor" Version="8.7.0" />
+		<PackageReference Include="MudBlazor" Version="6.16.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Finance.Application\Finance.Application.csproj" />
+		<ProjectReference Include="..\Finance.Contracts\Finance.Contracts.csproj" />
 		<ProjectReference Include="..\Finance.Domain\Finance.Domain.csproj" />
 	</ItemGroup>
+
 </Project>

@@ -1,7 +1,7 @@
-﻿using Finance.Application.Interfaces.Handlers;
-using Finance.Application.Interfaces.Repositories;
-using Finance.Application.Requests.Transactions;
-using Finance.Application.Responses;
+﻿using Finance.Contracts.Interfaces.Handlers;
+using Finance.Contracts.Interfaces.Repositories;
+using Finance.Contracts.Requests.Transactions;
+using Finance.Contracts.Responses;
 using Finance.Domain.Common;
 using Finance.Domain.Enums;
 using Finance.Domain.Models;

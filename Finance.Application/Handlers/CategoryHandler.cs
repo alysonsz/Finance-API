@@ -1,7 +1,7 @@
-﻿using Finance.Application.Interfaces.Handlers;
-using Finance.Application.Interfaces.Repositories;
-using Finance.Application.Requests.Categories;
-using Finance.Application.Responses;
+﻿using Finance.Contracts.Interfaces.Handlers;
+using Finance.Contracts.Interfaces.Repositories;
+using Finance.Contracts.Requests.Categories;
+using Finance.Contracts.Responses;
 using Finance.Domain.Models;
 using Finance.Domain.Models.DTOs;
 

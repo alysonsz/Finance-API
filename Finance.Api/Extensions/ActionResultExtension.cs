@@ -1,4 +1,4 @@
-﻿using Finance.Application.Responses;
+﻿using Finance.Contracts.Responses;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Finance.API.Extensions

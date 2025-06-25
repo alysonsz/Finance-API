@@ -1,26 +1,20 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Finance.Application.Interfaces.Handlers;
-using Finance.Application.Requests.Auth;
-using Finance.Application.Responses;
+﻿using Finance.Contracts.Interfaces.Handlers;
+using Finance.Contracts.Interfaces.Repositories;
+using Finance.Contracts.Requests.Auth;
+using Finance.Contracts.Responses;
 using Finance.Domain.Models;
-using Finance.Application.Interfaces.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace Finance.Application.Handlers;
 
-public class UserHandler : IUserHandler
+public class UserHandler(IUserRepository userRepository, IConfiguration configuration) : IUserHandler
 {
-    private readonly IUserRepository _userRepository;
-    private readonly IConfiguration _configuration;
-
-    public UserHandler(IUserRepository userRepository, IConfiguration configuration)
-    {
-        _userRepository = userRepository;
-        _configuration = configuration;
-    }
+    private readonly IUserRepository _userRepository = userRepository;
+    private readonly IConfiguration _configuration = configuration;
 
     public async Task<Response<string>> RegisterAsync(RegisterRequest request)
     {

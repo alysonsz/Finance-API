@@ -1,4 +1,4 @@
-﻿using Finance.Application.Interfaces.Repositories;
+﻿using Finance.Contracts.Interfaces.Repositories;
 using Finance.Domain.Models;
 using Finance.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;

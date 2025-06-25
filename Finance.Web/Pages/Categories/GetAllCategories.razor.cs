@@ -1,6 +1,6 @@
-﻿using Finance.Application.Interfaces.Handlers;
-using Finance.Application.Requests.Categories;
-using Finance.Domain.Models;
+﻿using Finance.Contracts.Interfaces.Handlers;
+using Finance.Contracts.Requests.Categories;
+using Finance.Domain.Models.DTOs;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -10,7 +10,7 @@ public partial class GetAll : ComponentBase
 {
     #region Properties
     public bool IsBusy { get; set; } = false;
-    public List<Category> Categories { get; set; } = [];
+    public List<CategoryDto> Categories { get; set; } = [];
     #endregion
 
     #region Services
