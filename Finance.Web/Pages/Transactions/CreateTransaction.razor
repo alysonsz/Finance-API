@@ -1,0 +1,68 @@
+﻿@page "/transacoes/criar"
+@using Finance.Contracts.Requests.Categories
+@using Finance.Contracts.Requests.Transactions
+@using Finance.Domain.Models.DTOs
+@inject ITransactionHandler TransactionHandler
+@inject ICategoryHandler CategoryHandler
+@inject NavigationManager Navigation
+
+<h3> Criar Transação</h3>
+
+<MudPaper Class="pa-6 mx-auto max-w-md">
+    <MudText Typo="Typo.h5">Criar Transação</MudText>
+
+    <MudTextField @bind-Value="transaction.Title" Label="Título" Variant="Variant.Filled" Required="true" />
+    <MudTextField T="string"
+                  Label="Valor"
+                  @bind-Value="amountText"
+                  Variant="Variant.Filled"
+                  Required="true"
+                  Immediate="true"
+                  InputType="InputType.Text" />
+
+    <MudSelect T="long" Label="Categoria" @bind-Value="transaction.CategoryId" Required="true" Variant="Variant.Filled">
+        @foreach (var category in categories)
+        {
+            <MudSelectItem Value="category.Id">@category.Title</MudSelectItem>
+        }
+    </MudSelect>
+    <MudDatePicker @bind-Date="transaction.PaidOrReceivedAt" Label="Data" Required="true" />
+
+    <MudButton Color="Color.Primary" OnClick="HandleCreate" Variant="Variant.Filled" Class="mt-4" FullWidth>
+        Criar
+    </MudButton>
+</MudPaper>
+
+@code {
+    private CreateTransactionRequest transaction = new();
+    private List<CategoryDto> categories = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await CategoryHandler.GetAllAsync(new GetAllCategoriesRequest { PageNumber = 1, PageSize = 100 });
+        if (result.IsSuccess && result.Data != null)
+        {
+            categories = result.Data;
+        }
+    }
+
+    private string amountText = string.Empty;
+
+    private async Task HandleCreate()
+    {
+        if (!decimal.TryParse(amountText, out var parsedAmount))
+        {
+            Console.WriteLine("Valor inválido");
+            return;
+        }
+
+        transaction.Amount = parsedAmount;
+
+        var response = await TransactionHandler.CreateAsync(transaction);
+        if (response.IsSuccess)
+            Navigation.NavigateTo("/transacoes");
+        else
+            Console.WriteLine(response.Message);
+    }
+
+}
