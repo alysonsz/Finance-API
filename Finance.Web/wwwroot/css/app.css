@@ -112,3 +112,131 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+.nav-scrollable {
+    background-color: #0d6efd;
+    color: white;
+    height: calc(100vh - 56px);
+    overflow-y: auto;
+    transition: width 0.3s ease;
+}
+
+    .nav-scrollable.collapsed {
+        width: 0;
+        overflow: hidden;
+        transition: width 0.3s ease;
+    }
+
+    .nav-scrollable nav.flex-column {
+        padding-top: 1rem;
+    }
+
+    .nav-scrollable .nav-link {
+        color: white;
+        font-weight: 500;
+        padding: 0.6rem 1rem;
+        border-radius: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: background-color 0.2s ease;
+    }
+
+        .nav-scrollable .nav-link:hover,
+        .nav-scrollable .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .nav-scrollable .nav-link .bi {
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+
+    .nav-scrollable .mud-divider {
+        border-color: rgba(255, 255, 255, 0.3);
+        margin: 1rem 0;
+    }
+
+    .nav-scrollable .mud-navlink {
+        color: white;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        border-radius: 0.3rem;
+        margin-bottom: 0.4rem;
+        transition: background-color 0.2s ease;
+    }
+
+        .nav-scrollable .mud-navlink:hover,
+        .nav-scrollable .mud-navlink.mud-navlink-active {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+        }
+
+    .nav-scrollable::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .nav-scrollable::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+    }
+
+        .nav-scrollable::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+.navbar-toggler {
+    border-color: rgba(255,255,255,0.6);
+}
+
+    .navbar-toggler:hover {
+        background-color: rgba(255,255,255,0.15);
+    }
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: white !important;
+    user-select: none;
+}
+
+.drawer-fixed {
+    width: 280px !important;
+}
+
+.drawer-paper {
+    background-color: #fafafb;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    border-right: none; 
+}
+
+.navmenu-styled {
+    padding-top: 24px;
+}
+
+    .navmenu-styled .mud-nav-link {
+        font-weight: 500;
+        padding: 12px 24px;
+        border-radius: 0 24px 24px 0;
+        margin-bottom: 8px;
+    }
+
+        .navmenu-styled .mud-nav-link:hover {
+            background-color: rgba(25, 118, 210, 0.08); 
+        }
+
+        .navmenu-styled .mud-nav-link.mud-nav-link-active {
+            background-color: rgba(25, 118, 210, 0.16);
+            color: #1976d2;
+        }
+
+.main-content {
+    margin-left: 280px;
+    padding: 24px;
+    background-color: #ffffff;
+    min-height: calc(100vh - 64px);
+}
+

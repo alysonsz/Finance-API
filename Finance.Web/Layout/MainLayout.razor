@@ -1,17 +1,57 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<MudLayout>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
+    <MudAppBar Elevation="4" Color="Color.Primary" Dense="true">
+        <MudText Typo="Typo.h6" Class="ml-2">Finance</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Info"
+                       Color="Color.Inherit"
+                       Title="About"
+                       OnClick="@OnAboutClicked" />
+    </MudAppBar>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+    <MudDrawer Open="true"
+               Variant="DrawerVariant.Persistent"
+               Elevation="0"
+               ClipMode="DrawerClipMode.Always"
+               Anchor="Anchor.Left"
+               Class="drawer-fixed"
+               DrawerPaperClass="drawer-paper">
+        <MudNavMenu Class="navmenu-styled">
+
+            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+                Home
+            </MudNavLink>
+
+            <MudNavLink Href="/categorias" Icon="@Icons.Material.Filled.ListAlt">
+                Categories
+            </MudNavLink>
+
+            <MudNavLink Href="/transacoes" Icon="@Icons.Material.Filled.AccountBalanceWallet">
+                Transactions
+            </MudNavLink>
+
+            <MudNavLink Href="/reports" Icon="@Icons.Material.Filled.BarChart">
+                Reports
+            </MudNavLink>
+
+            <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings">
+                Settings
+            </MudNavLink>
+
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudMainContent Class="main-content">
+        @Body
+    </MudMainContent>
+
+</MudLayout>
+
+@code {
+    private void OnAboutClicked()
+    {
+        Console.WriteLine("About clicked");
+    }
+}
