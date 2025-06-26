@@ -115,6 +115,7 @@ public class CategoryHandler(ICategoryRepository repository) : ICategoryHandler
         => new()
         {
             Id = category.Id,
-            Name = category.Title
+            Title = category.Title,
+            Description = category.Description
         };
 }

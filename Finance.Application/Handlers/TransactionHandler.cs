@@ -15,6 +15,8 @@ public class TransactionHandler(
 {
     public async Task<Response<TransactionDto?>> CreateAsync(CreateTransactionRequest request)
     {
+        request.Amount = Math.Abs(request.Amount);
+
         if (request.Type == ETransactionType.Withdraw && request.Amount >= 0)
             request.Amount *= -1;
 
@@ -166,7 +168,8 @@ public class TransactionHandler(
             Category = new CategoryDto
             {
                 Id = category.Id,
-                Name = category.Title
+                Title = category.Title,
+                Description = category.Description
             }
         };
 }
