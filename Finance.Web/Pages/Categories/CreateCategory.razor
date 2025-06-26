@@ -1,0 +1,30 @@
+﻿@page "/categorias/criar"
+@using Finance.Contracts.Requests.Categories
+@inject ICategoryHandler CategoryHandler
+@inject NavigationManager Navigation
+
+<h3> Criar Categoria</h3>
+
+<MudPaper Class="pa-6 mx-auto max-w-md">
+    <MudText Typo="Typo.h5">Criar Categoria</MudText>
+
+    <MudTextField @bind-Value="category.Title" Label="Título" Variant="Variant.Filled" Required="true" />
+    <MudTextField @bind-Value="category.Description" Label="Descrição" Variant="Variant.Filled" Required="true" />
+
+    <MudButton Color="Color.Primary" OnClick="HandleCreate" Variant="Variant.Filled" Class="mt-4" FullWidth>
+        Criar
+    </MudButton>
+</MudPaper>
+
+@code {
+    private CreateCategoryRequest category = new();
+
+    private async Task HandleCreate()
+    {
+        var response = await CategoryHandler.CreateAsync(category);
+        if (response.IsSuccess)
+            Navigation.NavigateTo("/categorias");
+        else
+            Console.WriteLine(response.Message);
+    }
+}

@@ -1,0 +1,46 @@
+﻿@page "/categorias/editar/{Id:long}"
+@using Finance.Contracts.Requests.Categories
+@using Finance.Domain.Models.DTOs
+@inject ICategoryHandler CategoryHandler
+@inject NavigationManager Navigation
+
+<h3>Editar Categoria</h3>
+
+<MudPaper Class="pa-6 mx-auto max-w-md">
+    <MudText Typo="Typo.h5">Editar Categoria</MudText>
+
+    <MudTextField @bind-Value="category.Title" Label="Título" Variant="Variant.Filled" Required="true" />
+    <MudTextField @bind-Value="category.Description" Label="Descrição" Variant="Variant.Filled" />
+
+    <MudButton Color="Color.Primary" OnClick="HandleEdit" Variant="Variant.Filled" Class="mt-4" FullWidth>
+        Salvar
+    </MudButton>
+</MudPaper>
+
+@code {
+    [Parameter] public long Id { get; set; }
+    private UpdateCategoryRequest category = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await CategoryHandler.GetByIdAsync(new() { Id = Id });
+        if (result.IsSuccess && result.Data is not null)
+        {
+            category = new()
+            {
+                Id = result.Data.Id,
+                Title = result.Data.Title,
+                Description = result.Data.Description
+            };
+        }
+    }
+
+    private async Task HandleEdit()
+    {
+        var result = await CategoryHandler.UpdateAsync(category);
+        if (result.IsSuccess)
+            Navigation.NavigateTo("/categorias");
+        else
+            Console.WriteLine(result.Message);
+    }
+}
