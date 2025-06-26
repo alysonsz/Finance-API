@@ -5,14 +5,9 @@ using Microsoft.JSInterop;
 
 namespace Finance.Web.Authentication;
 
-public class CustomAuthenticationStateProvider : AuthenticationStateProvider
+public class CustomAuthenticationStateProvider(IJSRuntime jsRuntime) : AuthenticationStateProvider
 {
-    private readonly IJSRuntime _jsRuntime;
-
-    public CustomAuthenticationStateProvider(IJSRuntime jsRuntime)
-    {
-        _jsRuntime = jsRuntime;
-    }
+    private readonly IJSRuntime _jsRuntime = jsRuntime;
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
@@ -40,7 +35,7 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(anonymous)));
     }
 
-    private IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
+    private static List<Claim> ParseClaimsFromJwt(string jwt)
     {
         var claims = new List<Claim>();
         var payload = jwt.Split('.')[1];
