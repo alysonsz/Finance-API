@@ -4,7 +4,6 @@ namespace Finance.Contracts.Requests.Categories;
 
 public class CreateCategoryRequest : Request
 {
-    public new long UserId { get; set; }
 
     [Required(ErrorMessage = "Título inválido")]
     [MaxLength(80, ErrorMessage = "O título deve conter até 80 caracteres")]

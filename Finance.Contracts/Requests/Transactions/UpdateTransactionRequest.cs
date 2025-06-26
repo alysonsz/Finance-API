@@ -6,7 +6,6 @@ namespace Finance.Contracts.Requests.Transactions;
 public class UpdateTransactionRequest : Request
 {
     public long Id { get; set; }
-    public new long UserId { get; set; }
 
     [Required(ErrorMessage = "Título inválido")]
     public string Title { get; set; } = string.Empty;
