@@ -11,10 +11,18 @@ public class TransactionHandler(IHttpClientFactory httpClientFactory) : ITransac
     private readonly HttpClient _client = httpClientFactory.CreateClient(WebConfiguration.HttpClientName);
 
     public async Task<Response<TransactionDto?>> CreateAsync(CreateTransactionRequest request)
-        => await PostAsync<CreateTransactionRequest, TransactionDto?>("v1/transactions", request, "Falha ao criar a transação");
+    {
+        request.Amount = Convert.ToDecimal(request.Amount);
+
+        return await PostAsync<CreateTransactionRequest, TransactionDto?>("v1/transactions", request, "Falha ao criar a transação");
+    }
 
     public async Task<Response<TransactionDto?>> UpdateAsync(UpdateTransactionRequest request)
-        => await PutAsync<UpdateTransactionRequest, TransactionDto?>($"v1/transactions/{request.Id}", request, "Falha ao atualizar a transação");
+    {
+        request.Amount = Convert.ToDecimal(request.Amount);
+
+        return await PutAsync<UpdateTransactionRequest, TransactionDto?>($"v1/transactions/{request.Id}", request, "Falha ao atualizar a transação");
+    }
 
     public async Task<Response<TransactionDto?>> DeleteAsync(DeleteTransactionRequest request)
         => await DeleteAsync<TransactionDto?>($"v1/transactions/{request.Id}", "Falha ao excluir a transação");

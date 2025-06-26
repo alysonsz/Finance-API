@@ -1,6 +1,7 @@
 ﻿@page "/transacoes"
 @using Finance.Contracts.Requests.Transactions
 @using Finance.Domain.Common
+@using Finance.Domain.Enums
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 @inherits Finance.Web.Pages.Transactions.GetAll
@@ -38,18 +39,32 @@ else
         <HeaderContent>
             <MudTh>Id</MudTh>
             <MudTh>Título</MudTh>
-            <MudTh>Data</MudTh>
             <MudTh>Valor</MudTh>
+            <MudTh>Data</MudTh>
             <MudTh></MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Id">@context.Id</MudTd>
             <MudTd DataLabel="Título">@context.Title</MudTd>
+            <MudTd DataLabel="Valor">
+                <MudText Color="@(context.Type == ETransactionType.Deposit ? Color.Success : Color.Error)">
+                    @Math.Abs(context.Amount).ToString("C")
+                </MudText>
+            </MudTd>
             <MudTd DataLabel="Data">@context.PaidOrReceivedAt?.ToString("dd/MM/yyyy")</MudTd>
-            <MudTd DataLabel="Valor">@context.Amount.ToString("C")</MudTd>
             <MudTd>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">Editar</MudButton>
-                <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small">Excluir</MudButton>
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           Size="Size.Small"
+                           Href="@($"/transacoes/editar/{context.Id}")">
+                    Editar
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" 
+                           Color="Color.Error" 
+                           Size="Size.Small" 
+                           OnClick="@(() => OnDeleteButtonClickedAsync(context.Id, context.Title))">
+                    Excluir
+                </MudButton>
             </MudTd>
         </RowTemplate>
     </MudTable>
