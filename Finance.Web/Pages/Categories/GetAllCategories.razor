@@ -27,14 +27,24 @@ else
         <HeaderContent>
             <MudTh>Id</MudTh>
             <MudTh>Título</MudTh>
-            <MudTh></MudTh>
+            <MudTh>Descrição</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Id">@context.Id</MudTd>
             <MudTd DataLabel="Título">@context.Title</MudTd>
+            <MudTd DataLabel="Descrição">@context.Description</MudTd>
             <MudTd>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">Editar</MudButton>
-                <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="@(() => OnDeleteButtonClickedAsync(context.Id, context.Title))">Excluir</MudButton>
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           Size="Size.Small"
+                           Href="@($"/categorias/editar/{context.Id}")">
+                    Editar
+            </MudButton>
+                <MudButton Variant="Variant.Outlined" 
+                           Color="Color.Error" Size="Size.Small" 
+                           OnClick="@(() => OnDeleteButtonClickedAsync(context.Id, context.Title))">
+                    Excluir
+            </MudButton>
             </MudTd>
         </RowTemplate>
     </MudTable>
