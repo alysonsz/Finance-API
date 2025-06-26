@@ -1,4 +1,4 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿<div class="top-row ps-3 navbar navbar-dark bg-primary">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Finance</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -7,22 +7,27 @@
     </div>
 </div>
 
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu" style="max-height: calc(100vh - 56px); overflow-y: auto;">
+    <nav class="flex-column nav flex-column px-3">
+        <div class="nav-item my-2">
+            <NavLink class="nav-link d-flex align-items-center" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill me-2" aria-hidden="true"></span> Home
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="categorias">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Categorias
+        <div class="nav-item my-2">
+            <NavLink class="nav-link d-flex align-items-center" href="categorias">
+                <span class="bi bi-list-nested me-2" aria-hidden="true"></span> Categorias
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="transacoes">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Transações
+        <div class="nav-item my-2">
+            <NavLink class="nav-link d-flex align-items-center" href="transacoes">
+                <span class="bi bi-plus-square-fill me-2" aria-hidden="true"></span> Transações
             </NavLink>
         </div>
+
+        <MudDivider Class="my-3" />
+
+        <MudNavLink Href="/categorias/criar" Icon="@Icons.Material.Filled.Add" Class="mb-2">Nova Categoria</MudNavLink>
+        <MudNavLink Href="/transacoes/criar" Icon="@Icons.Material.Filled.Add">Nova Transação</MudNavLink>
     </nav>
 </div>
