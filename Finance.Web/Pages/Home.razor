@@ -1,7 +1,24 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Início</PageTitle>
 
-<h1>Olá, mundo!</h1>
+<MudPaper Class="pa-6 mx-auto mt-12 max-w-xl elevation-4">
+    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
+        👋 Bem-vindo ao Finance
+    </MudText>
 
-Bem-vindo ao seu novo app.
+    <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-4">
+        Organize suas <b>categorias</b>, acompanhe suas <b>transações</b> e tenha o controle das suas finanças com clareza e eficiência.
+    </MudText>
+
+    <MudDivider Class="my-4" />
+
+    <div class="d-flex justify-center gap-3">
+        <MudButton Href="/categorias" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.List">
+            Categorias
+        </MudButton>
+        <MudButton Href="/transacoes" Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.AttachMoney">
+            Transações
+        </MudButton>
+    </div>
+</MudPaper>
