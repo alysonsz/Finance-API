@@ -1,4 +1,5 @@
 ﻿using Finance.API.Extensions;
+using Finance.Application.Extensions;
 using Finance.Contracts.Interfaces.Handlers;
 using Finance.Contracts.Requests.Transactions;
 using Microsoft.AspNetCore.Authorization;
@@ -73,6 +74,22 @@ public class TransactionsController(ITransactionHandler handler) : ControllerBas
             PageSize = pageSize
         };
         var response = await handler.GetByPeriodAsync(request);
+        return this.FromResponse(response);
+    }
+
+    [HttpGet("report")]
+    public async Task<IActionResult> GetReportAsync([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
+    {
+        var userId = User.GetUserId();
+
+        var request = new GetTransactionReportRequest
+        {
+            UserId = userId,
+            StartDate = startDate,
+            EndDate = endDate
+        };
+
+        var response = await handler.GetReportAsync(request);
         return this.FromResponse(response);
     }
 }
