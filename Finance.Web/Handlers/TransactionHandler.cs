@@ -1,6 +1,7 @@
 ﻿using Finance.Contracts.Interfaces.Handlers;
 using Finance.Contracts.Requests.Transactions;
 using Finance.Contracts.Responses;
+using Finance.Contracts.Responses.Transactions;
 using Finance.Domain.Models.DTOs;
 using System.Net.Http.Json;
 
@@ -39,6 +40,26 @@ public class TransactionHandler(IHttpClientFactory httpClientFactory) : ITransac
 
         return await _client.GetFromJsonAsync<PagedResponse<List<TransactionDto>?>>(url)
                ?? new PagedResponse<List<TransactionDto>?>("Não foi possível obter as transações", 500);
+    }
+
+    public async Task<Response<TransactionReportResponse>> GetReportAsync(GetTransactionReportRequest request)
+    {
+        var queryParams = new List<string>();
+
+        if (request.StartDate.HasValue)
+            queryParams.Add($"startDate={request.StartDate.Value:yyyy-MM-dd}");
+
+        if (request.EndDate.HasValue)
+            queryParams.Add($"endDate={request.EndDate.Value:yyyy-MM-dd}");
+
+        var queryString = queryParams.Count > 0
+            ? "?" + string.Join("&", queryParams)
+            : string.Empty;
+
+        var url = $"v1/transactions/report{queryString}";
+
+        return await _client.GetFromJsonAsync<Response<TransactionReportResponse>>(url)
+               ?? new Response<TransactionReportResponse>(default, 500, "Não foi possível carregar o relatório.");
     }
 
     private async Task<Response<T?>> GetAsync<T>(string url, string error)
