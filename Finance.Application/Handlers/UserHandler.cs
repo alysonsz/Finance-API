@@ -1,8 +1,11 @@
-﻿using Finance.Contracts.Interfaces.Handlers;
+﻿using Finance.Application.Extensions;
+using Finance.Contracts.Interfaces.Handlers;
 using Finance.Contracts.Interfaces.Repositories;
 using Finance.Contracts.Requests.Auth;
 using Finance.Contracts.Responses;
+using Finance.Contracts.Responses.Auth;
 using Finance.Domain.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -11,10 +14,11 @@ using System.Text;
 
 namespace Finance.Application.Handlers;
 
-public class UserHandler(IUserRepository userRepository, IConfiguration configuration) : IUserHandler
+public class UserHandler(IUserRepository userRepository, IConfiguration configuration, IHttpContextAccessor contextAccessor) : IUserHandler
 {
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IConfiguration _configuration = configuration;
+    private readonly IHttpContextAccessor _context = contextAccessor;
 
     public async Task<Response<string>> RegisterAsync(RegisterRequest request)
     {
@@ -74,5 +78,40 @@ public class UserHandler(IUserRepository userRepository, IConfiguration configur
         var token = tokenHandler.CreateToken(tokenDescriptor);
 
         return tokenHandler.WriteToken(token);
+    }
+
+    public async Task<Response<UserProfileResponse?>> GetProfileAsync()
+    {
+        var userId = _context.HttpContext!.User.GetUserId();
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+            return Response<UserProfileResponse?>.Fail("Usuário não encontrado");
+
+        var dto = new UserProfileResponse
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email
+        };
+        return Response<UserProfileResponse?>.Success(dto);
+    }
+
+    public async Task<Response<UserProfileResponse?>> UpdateProfileAsync(UpdateUserProfileRequest request)
+    {
+        var userId = _context.HttpContext!.User.GetUserId();
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+            return Response<UserProfileResponse?>.Fail("Usuário não encontrado");
+
+        user.Name = request.Name;
+        var updated = await _userRepository.UpdateAsync(user);
+
+        var dto = new UserProfileResponse
+        {
+            Id = updated.Id,
+            Name = updated.Name,
+            Email = updated.Email
+        };
+        return Response<UserProfileResponse?>.Success(dto, "Perfil atualizado com sucesso");
     }
 }
