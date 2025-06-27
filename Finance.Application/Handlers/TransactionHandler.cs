@@ -2,6 +2,8 @@
 using Finance.Contracts.Interfaces.Repositories;
 using Finance.Contracts.Requests.Transactions;
 using Finance.Contracts.Responses;
+using Finance.Contracts.Responses.Categories;
+using Finance.Contracts.Responses.Transactions;
 using Finance.Domain.Common;
 using Finance.Domain.Enums;
 using Finance.Domain.Models;
@@ -154,6 +156,40 @@ public class TransactionHandler(
         {
             return new PagedResponse<List<TransactionDto>?>(message: "Não foi possível obter as transações", code: 500);
         }
+    }
+
+    public async Task<Response<TransactionReportResponse>> GetReportAsync(GetTransactionReportRequest request)
+    {
+        var transactions = await transactionRepository.GetByPeriodAsync(
+            request.UserId,
+            request.StartDate,
+            request.EndDate
+        );
+
+        var expenses = transactions!.Where(t => t.Amount < 0);
+        var incomes = transactions!.Where(t => t.Amount > 0);
+
+        var report = new TransactionReportResponse
+        {
+            TotalExpenses = expenses.Sum(e => Math.Abs(e.Amount)),
+            TotalIncomes = incomes.Sum(i => i.Amount),
+            ExpensesByCategory = expenses
+                    .GroupBy(e => e.Category?.Title ?? "Unknown")
+                    .Select(g => new CategorySummaryResponse
+                    {
+                        CategoryName = g.Key,
+                        Total = Math.Abs(g.Sum(t => t.Amount))
+                    }).ToList(),
+            IncomesByCategory = incomes
+                    .GroupBy(i => i.Category?.Title ?? "Unknown")
+                    .Select(g => new CategorySummaryResponse
+                    {
+                        CategoryName = g.Key,
+                        Total = g.Sum(t => t.Amount)
+                    }).ToList()
+        };
+
+        return Response<TransactionReportResponse>.Success(report);
     }
 
     private static TransactionDto MapToDto(Transaction transaction, Category category)

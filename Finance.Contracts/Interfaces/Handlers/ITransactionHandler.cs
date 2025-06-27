@@ -1,5 +1,6 @@
 ﻿using Finance.Contracts.Requests.Transactions;
 using Finance.Contracts.Responses;
+using Finance.Contracts.Responses.Transactions;
 using Finance.Domain.Models.DTOs;
 
 namespace Finance.Contracts.Interfaces.Handlers;
@@ -11,4 +12,6 @@ public interface ITransactionHandler
     Task<Response<TransactionDto?>> DeleteAsync(DeleteTransactionRequest request);
     Task<Response<TransactionDto?>> GetByIdAsync(GetTransactionByIdRequest request);
     Task<PagedResponse<List<TransactionDto>?>> GetByPeriodAsync(GetTransactionsByPeriodRequest request);
+    Task<Response<TransactionReportResponse>> GetReportAsync(GetTransactionReportRequest request);
+
 }
