@@ -9,6 +9,7 @@ builder.AddCors();
 builder.AddDocumentation();
 builder.AddServices();
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
