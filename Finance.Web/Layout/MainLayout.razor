@@ -1,6 +1,8 @@
 ﻿@using Finance.Web.Handlers
 @inherits LayoutComponentBase
 @inject IAppPreferencesHandler PreferenceHandler
+@inject AuthHandler AuthHandler
+@inject NavigationManager Navigation
 @inject AppThemeHandler ThemeHandler
 
 
@@ -8,8 +10,12 @@
     <MudAppBar Elevation="1">
         <MudText Typo="Typo.h6" Class="ml-2">FINANCE</MudText>
         <MudSpacer />
-        <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Inherit" OnClick="@OnAboutClicked" />
+        <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Inherit" Href="/about" />
         <MudIconButton Icon="@(_isDarkMode? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" Color="Color.Inherit" OnClick="@ToggleTheme" />
+
+        <MudTooltip Text="Sair">
+            <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" OnClick="HandleLogout" />
+        </MudTooltip>
     </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen"
@@ -64,6 +70,12 @@
         _isDarkMode = isDark;
         StateHasChanged();
         return Task.CompletedTask;
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthHandler.LogoutAsync();
+        Navigation.NavigateTo("/login");
     }
 
     private void OnAboutClicked()
