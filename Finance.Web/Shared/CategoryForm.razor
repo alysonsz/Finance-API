@@ -1,0 +1,59 @@
+﻿@using Finance.Contracts.Requests.Categories
+
+<MudForm Model="@Model" @ref="_form">
+    <MudGrid Spacing="3">
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Model.Title"
+                          For="@(() => Model.Title)"
+                          Label="Título"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          RequiredError="O título é obrigatório." />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Model.Description"
+                          For="@(() => Model.Description)"
+                          Label="Descrição"
+                          Variant="Variant.Outlined"
+                          Lines="3" />
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex justify-end gap-4">
+            <MudButton Variant="Variant.Text"
+                       OnClick="OnCancel">
+                Cancelar
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="Submit">
+                @ButtonText
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudForm>
+
+@code {
+    private MudForm _form = null!;
+
+    [Parameter]
+    public UpdateCategoryRequest Model { get; set; } = new();
+
+    [Parameter]
+    public string ButtonText { get; set; } = "Salvar";
+
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private async Task Submit()
+    {
+        await _form.Validate();
+        if (_form.IsValid)
+        {
+            await OnValidSubmit.InvokeAsync();
+        }
+    }
+}

@@ -13,6 +13,9 @@ public partial class GetAll : ComponentBase
     #region Properties
     public bool IsBusy { get; set; } = false;
     public List<CategoryDto> Categories { get; set; } = [];
+
+    [SupplyParameterFromQuery]
+    public string? msg { get; set; }
     #endregion
 
     #region Services
@@ -27,6 +30,11 @@ public partial class GetAll : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         await LoadCategoriesAsync();
+
+        if (!string.IsNullOrEmpty(msg))
+        {
+            Snackbar.Add(msg, Severity.Success);
+        }
     }
     #endregion
 
