@@ -1,0 +1,93 @@
+﻿@using System.Globalization
+@using Finance.Contracts.Requests.Transactions
+@using Finance.Domain.Enums
+@using Finance.Domain.Models.DTOs
+
+<MudForm Model="@Model" @ref="_form">
+    <MudGrid Spacing="3">
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Model.Title"
+                          For="@(() => Model.Title)"
+                          Label="Título"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          RequiredError="O título é obrigatório." />
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudNumericField @bind-Value="Model.Amount"
+                             For="@(() => Model.Amount)"
+                             Label="Valor"
+                             Variant="Variant.Outlined"
+                             Required="true"
+                             Culture="@(CultureInfo.GetCultureInfo("pt-BR"))"
+                             Format="F2"
+                             Adornment="Adornment.Start"
+                             AdornmentText="R$" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudDatePicker Label="Data da Transação"
+                           @bind-Date="Model.PaidOrReceivedAt"
+                           For="@(() => Model.PaidOrReceivedAt)"
+                           Variant="Variant.Outlined"
+                           Required="true"
+                           RequiredError="A data é obrigatória." />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudSelect T="long"
+                       @bind-Value="Model.CategoryId"
+                       For="@(() => Model.CategoryId)"
+                       Label="Categoria"
+                       Variant="Variant.Outlined"
+                       Required="true"
+                       RequiredError="A categoria é obrigatória.">
+                @foreach (var category in Categories)
+                {
+                    <MudSelectItem Value="category.Id">@category.Title</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudRadioGroup @bind-Value="Model.Type" Required="true">
+                <MudRadio Option="ETransactionType.Deposit" Color="Color.Success">Receita</MudRadio>
+                <MudRadio Option="ETransactionType.Withdraw" Color="Color.Error">Despesa</MudRadio>
+            </MudRadioGroup>
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex justify-end gap-4 mt-4">
+            <MudButton Variant="Variant.Text" OnClick="OnCancel">Cancelar</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">@ButtonText</MudButton>
+        </MudItem>
+    </MudGrid>
+</MudForm>
+
+@code {
+    private MudForm _form = null!;
+
+    [Parameter]
+    public UpdateTransactionRequest Model { get; set; } = new();
+
+    [Parameter]
+    public List<CategoryDto> Categories { get; set; } = [];
+
+    [Parameter]
+    public string ButtonText { get; set; } = "Salvar";
+
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private async Task Submit()
+    {
+        await _form.Validate();
+        if (_form.IsValid)
+        {
+            await OnValidSubmit.InvokeAsync();
+        }
+    }
+}

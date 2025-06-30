@@ -2,67 +2,65 @@
 @using Finance.Contracts.Requests.Categories
 @using Finance.Contracts.Requests.Transactions
 @using Finance.Domain.Models.DTOs
+@using Finance.Web.Shared
 @inject ITransactionHandler TransactionHandler
 @inject ICategoryHandler CategoryHandler
 @inject NavigationManager Navigation
 
-<h3> Criar Transação</h3>
+<MudPaper Class="pa-6 mx-auto" MaxWidth="600px">
+    <MudText Typo="Typo.h5" GutterBottom="true">Nova Transação</MudText>
 
-<MudPaper Class="pa-6 mx-auto max-w-md">
-    <MudText Typo="Typo.h5">Criar Transação</MudText>
-
-    <MudTextField @bind-Value="transaction.Title" Label="Título" Variant="Variant.Filled" Required="true" />
-    <MudTextField T="string"
-                  Label="Valor"
-                  @bind-Value="amountText"
-                  Variant="Variant.Filled"
-                  Required="true"
-                  Immediate="true"
-                  InputType="InputType.Text" />
-
-    <MudSelect T="long" Label="Categoria" @bind-Value="transaction.CategoryId" Required="true" Variant="Variant.Filled">
-        @foreach (var category in categories)
-        {
-            <MudSelectItem Value="category.Id">@category.Title</MudSelectItem>
-        }
-    </MudSelect>
-    <MudDatePicker @bind-Date="transaction.PaidOrReceivedAt" Label="Data" Required="true" />
-
-    <MudButton Color="Color.Primary" OnClick="HandleCreate" Variant="Variant.Filled" Class="mt-4" FullWidth>
-        Criar
-    </MudButton>
+    @if (_categories is null)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else
+    {
+        <TransactionForm Model="_request"
+                         Categories="_categories"
+                         ButtonText="Criar"
+                         OnValidSubmit="HandleCreate"
+                         OnCancel="GoBack" />
+    }
 </MudPaper>
 
 @code {
-    private CreateTransactionRequest transaction = new();
-    private List<CategoryDto> categories = new();
+    private UpdateTransactionRequest _request = new()
+    {
+        PaidOrReceivedAt = DateTime.Now
+    };
+
+    private List<CategoryDto>? _categories;
 
     protected override async Task OnInitializedAsync()
     {
         var result = await CategoryHandler.GetAllAsync(new GetAllCategoriesRequest { PageNumber = 1, PageSize = 100 });
         if (result.IsSuccess && result.Data != null)
         {
-            categories = result.Data;
+            _categories = result.Data;
         }
     }
 
-    private string amountText = string.Empty;
-
     private async Task HandleCreate()
     {
-        if (!decimal.TryParse(amountText, out var parsedAmount))
+        var createRequest = new CreateTransactionRequest
         {
-            Console.WriteLine("Valor inválido");
-            return;
-        }
+            Title = _request.Title,
+            Amount = _request.Amount,
+            CategoryId = _request.CategoryId,
+            PaidOrReceivedAt = _request.PaidOrReceivedAt,
+            Type = _request.Type
+        };
 
-        transaction.Amount = parsedAmount;
-
-        var response = await TransactionHandler.CreateAsync(transaction);
+        var response = await TransactionHandler.CreateAsync(createRequest);
         if (response.IsSuccess)
-            Navigation.NavigateTo("/transacoes");
+            Navigation.NavigateTo("/transacoes?msg=Transação criada com sucesso!");
         else
             Console.WriteLine(response.Message);
     }
 
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/transacoes");
+    }
 }

@@ -16,6 +16,9 @@ public partial class GetAll : ComponentBase
     public List<TransactionDto> Transactions { get; set; } = [];
     public DateTime? StartDate { get; set; } = DateTime.Now.GetFirstDay();
     public DateTime? EndDate { get; set; } = DateTime.Now.GetLastDay();
+
+    [SupplyParameterFromQuery]
+    public string? msg { get; set; }
     #endregion
 
     #region Services
@@ -29,6 +32,11 @@ public partial class GetAll : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         await GetTransactionsAsync();
+
+        if (!string.IsNullOrEmpty(msg))
+        {
+            Snackbar.Add(msg, Severity.Success);
+        }
     }
     #endregion
 

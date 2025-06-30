@@ -1,31 +1,29 @@
 ﻿@page "/transacoes"
-@using Finance.Contracts.Requests.Transactions
-@using Finance.Domain.Common
 @using Finance.Domain.Enums
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 @inherits Finance.Web.Pages.Transactions.GetAll
 
-<MudText Typo="Typo.h4">Transações</MudText>
+<MudToolBar Dense="true" Class="d-flex flex-wrap flex-grow-1 gap-4 px-0 mb-4">
+    <MudText Typo="Typo.h5" Class="me-4">Transações</MudText>
 
-<div class="d-flex flex-wrap flex-grow-1 gap-4">
-    <MudDatePicker Label="Data Início" @bind-Date="StartDate" />
-    <MudDatePicker Label="Data Fim" @bind-Date="EndDate" />
+    <MudDatePicker Label="Data Início" @bind-Date="StartDate" PickerVariant="PickerVariant.Dialog" />
+    <MudDatePicker Label="Data Fim" @bind-Date="EndDate" PickerVariant="PickerVariant.Dialog" />
+
     <MudButton Variant="Variant.Filled"
                OnClick="GetTransactionsAsync"
-               StartIcon="@Icons.Material.Filled.Search">
+               StartIcon="@Icons.Material.Filled.Search"
+               Style="height: 40px; align-self: center;">
         Buscar
     </MudButton>
-</div>
-
-<div class="d-flex justify-end mt-4 mb-4">
+    <MudSpacer />
     <MudButton Href="/transacoes/criar"
                Variant="Variant.Filled"
                Color="Color.Primary"
                StartIcon="@Icons.Material.Filled.Add">
         Nova Transação
     </MudButton>
-</div>
+</MudToolBar>
 
 @if (IsBusy)
 {
@@ -35,36 +33,30 @@
 }
 else
 {
-    <MudTable Items="@Transactions" Hover="true" Striped="true" Bordered="true">
+    <MudTable Items="@Transactions" Hover="true" Dense="true" Striped="true" Class="mud-elevation-2">
         <HeaderContent>
             <MudTh>Id</MudTh>
             <MudTh>Título</MudTh>
-            <MudTh>Valor</MudTh>
             <MudTh>Data</MudTh>
-            <MudTh></MudTh>
+            <MudTh Style="text-align:right">Valor</MudTh>
+            <MudTh Style="text-align:right">Ações</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Id">@context.Id</MudTd>
             <MudTd DataLabel="Título">@context.Title</MudTd>
-            <MudTd DataLabel="Valor">
+            <MudTd DataLabel="Data">@context.PaidOrReceivedAt?.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd DataLabel="Valor" Style="text-align:right">
                 <MudText Color="@(context.Type == ETransactionType.Deposit ? Color.Success : Color.Error)">
-                    @Math.Abs(context.Amount).ToString("C")
+                    @context.Amount.ToString("C")
                 </MudText>
             </MudTd>
-            <MudTd DataLabel="Data">@context.PaidOrReceivedAt?.ToString("dd/MM/yyyy")</MudTd>
-            <MudTd>
-                <MudButton Variant="Variant.Outlined"
-                           Color="Color.Primary"
-                           Size="Size.Small"
-                           Href="@($"/transacoes/editar/{context.Id}")">
-                    Editar
-                </MudButton>
-                <MudButton Variant="Variant.Outlined" 
-                           Color="Color.Error" 
-                           Size="Size.Small" 
-                           OnClick="@(() => OnDeleteButtonClickedAsync(context.Id, context.Title))">
-                    Excluir
-                </MudButton>
+            <MudTd Style="text-align:right">
+                <MudTooltip Text="Editar">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" Href="@($"/transacoes/editar/{context.Id}")" />
+                </MudTooltip>
+                <MudTooltip Text="Excluir">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => OnDeleteButtonClickedAsync(context.Id, context.Title))" />
+                </MudTooltip>
             </MudTd>
         </RowTemplate>
     </MudTable>
