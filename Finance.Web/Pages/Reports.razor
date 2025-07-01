@@ -1,0 +1,130 @@
+﻿@page "/reports"
+@using Finance.Contracts.Responses.Transactions
+@using Finance.Contracts.Interfaces.Handlers
+@using Finance.Contracts.Requests.Transactions
+@inject ITransactionHandler TransactionHandler
+
+<MudToolBar Dense="true" Class="d-flex flex-wrap flex-grow-1 gap-4 px-0 mb-4">
+    <MudText Typo="Typo.h5" Class="me-4">Relatórios</MudText>
+
+    <MudDatePicker Label="Data Início" @bind-Date="_startDate" PickerVariant="PickerVariant.Dialog" />
+    <MudDatePicker Label="Data Fim" @bind-Date="_endDate" PickerVariant="PickerVariant.Dialog" />
+
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               Disabled="@_loading"
+               OnClick="LoadReportAsync"
+               StartIcon="@Icons.Material.Filled.Search"
+               Style="height: 40px; align-self: center;">
+        Filtrar
+    </MudButton>
+</MudToolBar>
+
+@if (_loading)
+{
+    <div class="d-flex justify-center my-16">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+    </div>
+}
+else if (_report != null)
+{
+    <MudGrid Spacing="3" Class="mb-6">
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudText Typo="Typo.h6">Total de Receitas</MudText>
+                <MudText Typo="Typo.h5" Class="mt-2" Color="Color.Success">@_report.TotalIncomes.ToString("C")</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudText Typo="Typo.h6">Total de Despesas</MudText>
+                <MudText Typo="Typo.h5" Class="mt-2" Color="Color.Error">@_report.TotalExpenses.ToString("C")</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="4">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudText Typo="Typo.h6">Saldo do Período</MudText>
+                <MudText Typo="Typo.h5" Class="mt-2" Color="@(Balance >= 0 ? Color.Success : Color.Error)">@Balance.ToString("C")</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudPaper Elevation="2" Class="pa-4">
+        <MudText Typo="Typo.h6" Class="mb-4">Receitas vs. Despesas por Categoria</MudText>
+
+        @if (_chartSeries.Any() && _chartLabels.Any())
+        {
+            <MudChart ChartType="ChartType.Bar" ChartSeries="_chartSeries" XAxisLabels="_chartLabels" Height="400px" />
+        }
+        else
+        {
+            <MudText>Nenhum dado para exibir no período selecionado.</MudText>
+        }
+    </MudPaper>
+}
+
+@code {
+    private bool _loading;
+    private TransactionReportResponse? _report;
+    private string[] _chartLabels = Array.Empty<string>();
+    private List<ChartSeries> _chartSeries = new();
+
+    private DateTime? _startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+    private DateTime? _endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(1).AddDays(-1);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReportAsync();
+    }
+
+    private async Task LoadReportAsync()
+    {
+        _loading = true;
+        _report = null; 
+
+        var request = new GetTransactionReportRequest
+        {
+            StartDate = _startDate,
+            EndDate = _endDate
+        };
+
+        var response = await TransactionHandler.GetReportAsync(request);
+
+        if (response.IsSuccess && response.Data is not null)
+        {
+            _report = response.Data;
+            PrepareChartData(); 
+        }
+
+        _loading = false;
+    }
+
+    private void PrepareChartData()
+    {
+        if (_report is null) return;
+
+        _chartLabels = _report.ExpensesByCategory.Select(c => c.CategoryName)
+            .Union(_report.IncomesByCategory.Select(c => c.CategoryName))
+            .Distinct()
+            .OrderBy(name => name)
+            .ToArray();
+
+        var expenseData = _chartLabels
+            .Select(label => (double)(_report.ExpensesByCategory
+                .FirstOrDefault(c => c.CategoryName == label)?.Total ?? 0))
+            .ToArray();
+
+        var incomeData = _chartLabels
+            .Select(label => (double)(_report.IncomesByCategory
+                .FirstOrDefault(c => c.CategoryName == label)?.Total ?? 0))
+            .ToArray();
+
+        _chartSeries = new List<ChartSeries>
+        {
+            new() { Name = "Receitas", Data = incomeData },
+            new() { Name = "Despesas", Data = expenseData }
+        };
+    }
+
+    private decimal Balance => (_report?.TotalIncomes ?? 0) - (_report?.TotalExpenses ?? 0);
+}
