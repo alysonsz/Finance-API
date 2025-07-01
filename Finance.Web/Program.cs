@@ -10,19 +10,17 @@ using System.Globalization;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-var culture = new CultureInfo("pt-BR");
-CultureInfo.DefaultThreadCurrentCulture = culture;
-CultureInfo.DefaultThreadCurrentUICulture = culture;
-
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddMudServices();
 
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
-builder.Services.AddAuthorizationCore();
-
 builder.Services.AddScoped<AuthMessageHandler>();
+builder.Services.AddSingleton<AppThemeHandler>();
+builder.Services.AddScoped<IAppPreferencesHandler, AppPreferencesHandler>();
+
+builder.Services.AddAuthorizationCore();
 
 builder.Services.AddHttpClient(WebConfiguration.HttpClientName, client =>
 {
@@ -36,4 +34,18 @@ builder.Services.AddTransient<ICategoryHandler, CategoryHandler>();
 builder.Services.AddTransient<ITransactionHandler, TransactionHandler>();
 builder.Services.AddTransient<AuthHandler, AuthHandler>();
 
-await builder.Build().RunAsync();
+var host = builder.Build();
+
+await SetDefaultCultureAsync(host.Services);
+await host.RunAsync();
+
+static async Task SetDefaultCultureAsync(IServiceProvider services)
+{
+    await using var scope = services.CreateAsyncScope();
+    var preferenceHandler = scope.ServiceProvider.GetRequiredService<IAppPreferencesHandler>();
+
+    var culture = await preferenceHandler.GetCultureAsync();
+
+    CultureInfo.DefaultThreadCurrentCulture = culture;
+    CultureInfo.DefaultThreadCurrentUICulture = culture;
+}
