@@ -1,0 +1,139 @@
+﻿@page "/settings"
+@using Finance.Web.Handlers
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+@inject AppThemeHandler ThemeHandler
+@inject IAppPreferencesHandler PreferenceHandler
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6">
+    <MudPaper Elevation="2" Class="pa-6">
+
+        <MudText Typo="Typo.h4" Class="mb-4 d-flex align-items-center">
+            <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" /> Configurações
+        </MudText>
+
+        <MudText Typo="Typo.h6">Perfil</MudText>
+
+        <MudText Typo="Typo.body2" Class="mud-text-secondary mb-3">
+            Suas informações de perfil são baseadas na sua conta e não podem ser editadas aqui.
+        </MudText>
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudTextField Label="Nome" @bind-Value="_name" Variant="Variant.Outlined" ReadOnly="true" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField Label="Email" @bind-Value="_email" Variant="Variant.Outlined" ReadOnly="true" />
+            </MudItem>
+        </MudGrid>
+
+        <MudDivider Class="my-6" />
+
+        <MudText Typo="Typo.h6">Tema</MudText>
+
+        <MudText Typo="Typo.body2" Class="mud-text-secondary mb-2">
+            Alterne entre os modos claro e escuro. A mudança é aplicada instantaneamente.
+        </MudText>
+
+        <MudSwitch Checked="@_isDarkMode" CheckedChanged="OnDarkModeChanged" Color="Color.Primary" Label="Modo Escuro" T="bool" />
+
+        <MudDivider Class="my-6" />
+
+        <MudText Typo="Typo.h6">Preferências</MudText>
+
+        <MudText Typo="Typo.body2" Class="mud-text-secondary mb-3">
+            Personalize as configurações de moeda e notificações.
+        </MudText>
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudSelect T="string" Label="Moeda Padrão" @bind-Value="_currency" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("BRL")">R$ (BRL)</MudSelectItem>
+                    <MudSelectItem Value="@("USD")">$ (USD)</MudSelectItem>
+                    <MudSelectItem Value="@("EUR")">€ (EUR)</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudText Class="font-weight-medium">Notificações</MudText>
+                <MudCheckBox T="bool" @bind-Checked="_emailNotifications" Label="Notificações por E-mail" />
+                <MudCheckBox T="bool" @bind-Checked="_pushNotifications" Label="Notificações Push (Mobile)" />
+            </MudItem>
+        </MudGrid>
+
+        <MudDivider Class="my-6" />
+
+        <MudGrid Justify="Justify.FlexEnd" Spacing="3">
+            <MudItem>
+                <MudButton Variant="Variant.Text" OnClick="CancelChanges">Cancelar</MudButton>
+            </MudItem>
+            <MudItem>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveChanges">Salvar Preferências</MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+</MudContainer>
+
+@code {
+
+    private string? _name;
+    private string? _email;
+    private string _currency = "BRL";
+    private bool _emailNotifications;
+    private bool _pushNotifications;
+    private bool _isDarkMode;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        _name = user.FindFirst("unique_name")?.Value ?? "Desconhecido";
+        _email = user.FindFirst("email")?.Value ?? "Desconhecido";
+
+        ThemeHandler.OnThemeChanged += OnThemeChangedFromHandler;
+
+        await LoadSettingsAsync();
+    }
+
+    private async Task LoadSettingsAsync()
+    {
+        _isDarkMode = await PreferenceHandler.GetDarkModeAsync();
+        _currency = await PreferenceHandler.GetCurrencyAsync();
+        _emailNotifications = await PreferenceHandler.GetNotifyEmailAsync();
+        _pushNotifications = await PreferenceHandler.GetNotifyPushAsync();
+        StateHasChanged();
+    }
+
+    private async Task OnDarkModeChanged(bool isDark)
+    {
+        _isDarkMode = isDark;
+        await PreferenceHandler.SetDarkModeAsync(_isDarkMode);
+        await ThemeHandler.ApplyTheme(_isDarkMode);
+    }
+
+    private async Task OnThemeChangedFromHandler(bool isDark)
+    {
+        _isDarkMode = isDark;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SaveChanges()
+    {
+        await PreferenceHandler.SetCurrencyAsync(_currency);
+        await PreferenceHandler.SetNotifyEmailAsync(_emailNotifications);
+        await PreferenceHandler.SetNotifyPushAsync(_pushNotifications);
+        Snackbar.Add("Preferências salvas com sucesso!", Severity.Success);
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+
+    private async Task CancelChanges()
+    {
+        await LoadSettingsAsync();
+    }
+
+    public void Dispose()
+    {
+        ThemeHandler.OnThemeChanged -= OnThemeChangedFromHandler;
+    }
+}
