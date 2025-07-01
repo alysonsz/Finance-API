@@ -1,16 +1,18 @@
 ﻿using Finance.Contracts.Requests.Auth;
 using Finance.Contracts.Responses;
 using Finance.Contracts.Responses.Auth;
+using Finance.Web.Authentication;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 using System.Net.Http.Json;
-using static System.Net.WebRequestMethods;
 
 namespace Finance.Web.Handlers;
 
-public class AuthHandler(HttpClient httpClient, IJSRuntime jsRuntime)
+public class AuthHandler(HttpClient httpClient, IJSRuntime jsRuntime, AuthenticationStateProvider authenticationStateProvider)
 {
     private readonly HttpClient _httpClient = httpClient;
     private readonly IJSRuntime _jsRuntime = jsRuntime;
+    private readonly AuthenticationStateProvider _authenticationStateProvider = authenticationStateProvider;
     private const string _tokenKey = "authToken";
 
     public async Task<bool> LoginAsync(LoginRequest request)
@@ -24,6 +26,9 @@ public class AuthHandler(HttpClient httpClient, IJSRuntime jsRuntime)
             return false;
 
         await _jsRuntime.InvokeVoidAsync("localStorage.setItem", _tokenKey, content.Token);
+
+        ((CustomAuthenticationStateProvider)_authenticationStateProvider).NotifyUserAuthentication(content.Token);
+
         return true;
     }
 
@@ -38,6 +43,9 @@ public class AuthHandler(HttpClient httpClient, IJSRuntime jsRuntime)
             return false;
 
         await _jsRuntime.InvokeVoidAsync("localStorage.setItem", _tokenKey, content.Token);
+
+        ((CustomAuthenticationStateProvider)_authenticationStateProvider).NotifyUserAuthentication(content.Token);
+
         return true;
     }
 
@@ -54,7 +62,10 @@ public class AuthHandler(HttpClient httpClient, IJSRuntime jsRuntime)
     }
 
     public async Task LogoutAsync()
-        => await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", _tokenKey);
+    {
+        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", _tokenKey);
+        ((CustomAuthenticationStateProvider)_authenticationStateProvider).NotifyUserLogout();
+    }
 
     public async Task<string?> GetTokenAsync()
         => await _jsRuntime.InvokeAsync<string>("localStorage.getItem", _tokenKey);

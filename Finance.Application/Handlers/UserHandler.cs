@@ -57,12 +57,13 @@ public class UserHandler(IUserRepository userRepository, IConfiguration configur
     {
         var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
         var issuer = _configuration["Jwt:Issuer"];
+        var audience = _configuration["Jwt:Audience"];
 
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Name),
-            new Claim(ClaimTypes.Email, user.Email)
+            new Claim("unique_name", user.Name),
+            new Claim("email", user.Email)
         };
 
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -70,7 +71,7 @@ public class UserHandler(IUserRepository userRepository, IConfiguration configur
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddHours(4),
             Issuer = issuer,
-            Audience = issuer,
+            Audience = audience,
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
 
