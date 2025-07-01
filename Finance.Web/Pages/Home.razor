@@ -1,24 +1,147 @@
 ﻿@page "/"
+@using Finance.Domain.Common
+@using Finance.Domain.Enums
+@using Finance.Contracts.Requests.Transactions
+@using Finance.Contracts.Interfaces.Handlers
+@using Finance.Domain.Models.DTOs
+@using System.Globalization
+@inject ITransactionHandler TransactionHandler
 
-<PageTitle>Início</PageTitle>
+<PageTitle>Dashboard</PageTitle>
 
-<MudPaper Class="pa-6 mx-auto mt-12 max-w-xl elevation-4">
-    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
-        👋 Bem-vindo ao Finance
-    </MudText>
+<MudText Typo="Typo.h4" Class="mb-4">Dashboard de @(DateTime.Now.ToString("MMMM"))</MudText>
 
-    <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-4">
-        Organize suas <b>categorias</b>, acompanhe suas <b>transações</b> e tenha o controle das suas finanças com clareza e eficiência.
-    </MudText>
-
-    <MudDivider Class="my-4" />
-
-    <div class="d-flex justify-center gap-3">
-        <MudButton Href="/categorias" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.List">
-            Categories
-        </MudButton>
-        <MudButton Href="/transacoes" Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.AttachMoney">
-            Transactions
-        </MudButton>
+@if (_isLoading)
+{
+    <div class="d-flex justify-center my-16">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
     </div>
-</MudPaper>
+}
+else
+{
+    <MudGrid Spacing="3" Class="mb-6">
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="2" Class="pa-4 d-flex flex-column justify-center" Style="height: 100%;">
+                <MudText Typo="Typo.subtitle1" Class="mud-text-secondary">Receitas no Mês</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Success">@_totalIncomes.ToString("C")</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="2" Class="pa-4 d-flex flex-column justify-center" Style="height: 100%;">
+                <MudText Typo="Typo.subtitle1" Class="mud-text-secondary">Despesas no Mês</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Error">@_totalExpenses.ToString("C")</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="2" Class="pa-4 d-flex flex-column justify-center" Style="height: 100%;">
+                <MudText Typo="Typo.subtitle1" Class="mud-text-secondary">Saldo</MudText>
+                <MudText Typo="Typo.h5" Color="@(_balance >= 0 ? Color.Success : Color.Error)">@_balance.ToString("C")</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudGrid Spacing="3">
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudText Typo="Typo.h6" GutterBottom="true">Despesas por Categoria</MudText>
+                @if (_chartSeries.Any() && _chartSeries[0].Data.Length > 0)
+                {
+                    <MudChart ChartType="ChartType.Donut"
+                              ChartSeries="_chartSeries"
+                              ChartOptions="_chartOptions"
+                              XAxisLabels="@_chartLabels"
+                              LegendPosition="Position.Bottom"
+                              Height="300px" />
+                }
+                else
+                {
+                    <MudText>Nenhuma despesa no período para exibir.</MudText>
+                }
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudText Typo="Typo.h6" GutterBottom="true">Últimas Transações</MudText>
+                <MudList Clickable="false">
+                    @foreach (var tx in _recentTransactions)
+                    {
+                        <MudListItem Icon="@(tx.Type == ETransactionType.Deposit ? Icons.Material.Filled.ArrowUpward : Icons.Material.Filled.ArrowDownward)"
+                                     IconColor="@(tx.Type == ETransactionType.Deposit ? Color.Success : Color.Error)">
+                            <div class="d-flex justify-space-between flex-grow-1">
+                                <MudText>@tx.Title</MudText>
+                                <MudText Typo="Typo.body2">@tx.Amount.ToString("C")</MudText>
+                            </div>
+                        </MudListItem>
+                    }
+                </MudList>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private bool _isLoading = true;
+    private decimal _totalIncomes;
+    private decimal _totalExpenses;
+    private decimal _balance;
+
+    private List<ChartSeries> _chartSeries = new();
+    private ChartOptions _chartOptions = new()
+    {
+        ChartPalette = new[] { "#594AE2", "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0" }
+    };
+
+    private string[] _chartLabels = Array.Empty<string>();
+
+    private List<TransactionDto> _recentTransactions = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _isLoading = true;
+
+        var request = new GetTransactionsByPeriodRequest
+        {
+            StartDate = DateTime.Now.GetFirstDay(),
+            EndDate = DateTime.Now.GetLastDay(),
+            PageNumber = 1,
+            PageSize = 1000
+        };
+
+        var result = await TransactionHandler.GetByPeriodAsync(request);
+        if (result.IsSuccess && result.Data is not null)
+        {
+            var transactions = result.Data;
+
+            _totalIncomes = transactions.Where(t => t.Type == ETransactionType.Deposit).Sum(t => t.Amount);
+            _totalExpenses = transactions.Where(t => t.Type == ETransactionType.Withdraw).Sum(t => t.Amount);
+            _balance = _totalIncomes - _totalExpenses;
+
+            var expensesByCategory = transactions
+                .Where(t => t.Type == ETransactionType.Withdraw)
+                .GroupBy(t => t.Category?.Title ?? "Sem Categoria")
+                .Select(g => new
+                {
+                    Category = g.Key,
+                    Total = Math.Abs(g.Sum(t => t.Amount))
+                })
+                .OrderByDescending(x => x.Total)
+                .ToList();
+
+            if (expensesByCategory.Any())
+            {
+                _chartSeries.Clear();
+                _chartSeries.Add(new ChartSeries
+                {
+                    Name = "Despesas",
+                    Data = expensesByCategory.Select(x => Convert.ToDouble(x.Total, CultureInfo.InvariantCulture)).ToArray()
+                });
+
+                _chartLabels = expensesByCategory.Select(x => x.Category).ToArray();
+            }
+
+            _recentTransactions = transactions.OrderByDescending(t => t.PaidOrReceivedAt).Take(5).ToList();
+        }
+
+        _isLoading = false;
+    }
+}
