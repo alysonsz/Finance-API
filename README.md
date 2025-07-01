@@ -1,45 +1,30 @@
 # Finance API
 
-### 📌 Descrição do Projeto
+### 📌 Descrição
 
-A **Finance API** é uma aplicação RESTful desenvolvida em .NET 8 com foco no gerenciamento de transações financeiras e categorias. O sistema é estruturado seguindo os princípios da Arquitetura Limpa (Clean Architecture), promovendo organização, manutenibilidade e escalabilidade.
-
----
-
-### 🚀 Objetivos do Projeto
-
-- Utilizar **Clean Architecture** com separação clara de responsabilidades.
-- Permitir o registro de **transações financeiras** com data, valor e tipo.
-- Oferecer controle de **categorias personalizadas** para organização das finanças.
-- Persistir dados com **Entity Framework Core** e banco de dados **SQL Server**.
-- Expor endpoints RESTful com documentação via **Swagger**.
+A **Finance API** é uma aplicação completa para controle de transações financeiras, desenvolvida com .NET 8 e Blazor WebAssembly, estruturada com Clean Architecture para promover organização, reutilização e clareza entre suas camadas de domínio, aplicação, infraestrutura, API e interface web.
 
 ---
 
-### 🛠️ Tecnologias Utilizadas
+### 🚀 Funcionalidades
 
-**Backend:**
-- .NET 8
-- ASP.NET Core Web API
-- Entity Framework Core
-- SQL Server
-
-**Padrões e Ferramentas:**
-- Clean Architecture
-- Injeção de Dependência (DI)
-- AutoMapper
-- Swagger / OpenAPI
+- Cadastro e gerenciamento de categorias
+- Registro de receitas e despesas
+- Autenticação via JWT
+- Interface web com Blazor integrada
+- Documentação automática via Swagger
+- Testes automatizados
 
 ---
 
-### 🔄 Funcionalidades Principais
+### 🛠️ Tecnologias
 
-- **Gerenciamento de Categorias:**
-  - Cadastro, listagem e exclusão de categorias
-- **Gerenciamento de Transações:**
-  - Registro de receitas e despesas
-  - Associação de transações com categorias
-  - Filtro por tipo e data
+- Backend: .NET 8, ASP.NET Core, Entity Framework Core  
+- Frontend: Blazor WebAssembly  
+- Arquitetura: Clean Architecture (Domain, Application, Infrastructure, API, Web)  
+- Banco de dados: SQL Server LocalDB (via EF Core Migrations)  
+- Ferramentas: AutoMapper, Swagger/OpenAPI  
+- Testes: XUnit
 
 ---
 
@@ -49,25 +34,37 @@ A **Finance API** é uma aplicação RESTful desenvolvida em .NET 8 com foco no 
 Finance/
 ├── Finance.sln
 │
-├── Finance.API/                         # Camada de apresentação (Web API)
+├── Finance.Api/                        # Camada de apresentação (API)
 │   ├── Controllers/
-│   │   ├── CategoryController.cs
+│   │   ├── AuthController.cs
+│   │   ├── CategoriesController.cs
 │   │   └── TransactionController.cs
 │   ├── Properties/
 │   │   ├── launchSettings.json
 │   │   └── serviceDependencies.json
 │   ├── Extensions/
+│   │   ├── ActionResultExtension.cs
 │   │   └── BuilderExtension.cs
 │   ├── ApiConfiguration.cs
 │   ├── appsettings.json
 │   ├── Program.cs
 │   └── Finance.API.csproj
 │
-├── Finance.Application/                # Camada de aplicação (handlers e interfaces)
+├── Finance.Application/                # Camada de aplicação (handlers e claim do JWT)
+│   ├── Extensions/
+│   │   └── ClaimsPrincipalExtension.cs
 │   ├── Handlers/
 │   │   ├── CategoryHandler.cs
-│   │   └── TransactionHandler.cs
+│   │   ├── TransactionHandler.cs
+│   │   └── UserHandler.cs
+│   └── Finance.Application.csproj
+│
+├── Finance.Contracts/                     # Camada de compartilhamento (interfaces, requests, responses)
 │   ├── Requests/
+│   │   ├── Auth/
+│   │   │   ├── LoginRequest.cs
+│   │   │   ├── RegisterRequest.cs
+│   │   ├── └── UpdateUserProfileRequest.cs
 │   │   ├── Categories/
 │   │   │   ├── CreateCategoryRequest.cs
 │   │   │   ├── DeleteCategoryRequest.cs
@@ -78,21 +75,31 @@ Finance/
 │   │   │   ├── CreateTransactionRequest.cs
 │   │   │   ├── DeleteTransactionRequest.cs
 │   │   │   ├── GetTransactionByIdRequest.cs
+│   │   │   ├── GetTransactionReportRequest.cs
 │   │   │   ├── GetTransactionByPeriodRequest.cs
 │   │   ├── └── UpdateTransactionRequest.cs
 │   │   ├── PagedRequest.cs
 │   │   └── Request.cs
 │   ├── Responses/
+│   │   ├── Auth/
+│   │   ├── └── UserProfileResponse.cs
+│   │   ├── Categories/
+│   │   ├── └── CategorySummaryResponse.cs
+│   │   ├── Transacations/
+│   │   ├── └── TransactionReportResponse.cs
 │   │   ├── PagedResponse.cs
 │   │   └── Response.cs
 │   ├── Interfaces/
 │   │   ├── Handlers/
+│   │   │   ├── IAppPreferencesHandler.cs
 │   │   │   ├── ICategoryHandler.cs
-│   │   ├── └── ITransactionHandler.cs
+│   │   │   ├── ITransactionHandler.cs
+│   │   ├── └── IUserHandler.cs
 │   │   ├── Repositories/
 │   │   │   ├── ICategoryRepository.cs
-│   └── └── └── ITransactionRepository.cs
-│   └── Finance.Application.csproj
+│   │   │   ├── ITransactionRepository.cs
+│   ├── └── └── IUserRepository.cs
+│   └── Finance.Contracts.csproj
 │
 ├── Finance.Domain/                     # Camada de domínio (entidades e contratos)
 │   ├── Common/
@@ -100,93 +107,130 @@ Finance/
 │   ├── Enums/
 │   │   └── ETransactionType.cs
 │   ├── Models/
+│   │   │   ├── DTOs/
+│   │   │   │   ├── CategoryDto.cs
+│   │   │   └── └── TransactionDto.cs
 │   │   ├── Category.cs
-│   │   └── Transaction.cs
+│   │   ├── Transaction.cs
+│   │   └── User.cs
 │   └── Finance.Domain.csproj
 │
 ├── Finance.Infrastructure/             # Camada de infraestrutura (banco de dados e repositórios)
 │   ├── Data/
 │   │   ├──  Mappings/
 │   │   │    ├── CategoryMapping.cs
-│   │   └──  └── TransactionMapping.cs
+│   │   │    ├── TransactionMapping.cs
+│   │   └──  └── UserMapping.cs
 │   └── FinanceDbContext.cs
 │   ├── Migrations/
 │   │   ├── InitialCreate.cs
 │   │   └── FinanceDbContextModelSnapshot.cs
 │   ├── Repositories/
 │   │   ├── CategoryRepository.cs
-│   │   └── TransactionRepository.cs
+│   │   ├── TransactionRepository.cs
+│   │   └── UserRepository.cs
 │   └── Finance.Infrastructure.csproj
 │
-├── Finance.Web/                         # Camada Web (Frontend Razor Pages)
-│   ├── Handles/
+├── Finance.Web/                         # Camada Web (Frontend Blazor Pages)
+│   ├── Authentication/
+│   │   └── CustomAuthenticationStateProvider.cs
+│   ├── Handlers/
+│   │   ├── AppPreferencesHandler.cs
+│   │   ├── AppThemeHandler.cs
+│   │   ├── AuthHandler.cs
+│   │   ├── AuthMessageHandler.cs
 │   │   ├── CategoryHandler.cs
 │   │   └── TransactionHandler.cs
 │   ├── Layout/
-│   │   ├── App.razor
-│   │   ├── MainLayout.razor
-│   │   └── NavMenu.razor
+│   │   ├── LoginLayout.razor
+│   │   └── MainLayout.razor
 │   ├── Pages/
 │   │   ├── Categories/
+│   │   │   ├── CreateCategory.razor
+│   │   │   ├── EditCategory.razor
 │   │   │   └── GetAllCategories.razor
+│   │   │        └── GetAllCategories.razor.cs
 │   │   ├── Transactions/
+│   │   │   ├── CreateTransaction.razor
+│   │   │   ├── EditTransaction.razor
 │   │   │   └── GetAllTransactions.razor
-│   │   └── Home.razor
+│   │   │        └── GetAllTransactions.razor.cs
+│   │   ├── About.razor
+│   │   ├── Home.razor
+│   │   ├── Login.razor
+│   │   ├── RedirectToLogin.razor
+│   │   ├── Register.razor
+│   │   ├── Reports.razor
+│   │   └── Settings.razor
+│   ├── Shared/
+│   │   ├── CategoryForm.razor
+│   │   └── TransactionForm.razor
 │   ├── wwwroot/
 │   │   └── css/
 │   │       └── app.css
 │   ├── WebConfiguration.cs
 │   ├── Program.cs
+│   ├── App.razor
 │   ├── _Imports.razor
 └── └── Finance.Web.csproj
 ```
 
 ---
 
-### ⚙️ Como Rodar o Projeto
+### ✅ Como executar o projeto
 
-1. Clone o repositório:
-   ```
-   git clone https://github.com/alysonsz/Finance-API.git
-   ```
+#### 1. Clone o repositório
 
-2. Acesse a pasta raiz do projeto:
-   ```
-   cd Finance-API
-   ```
+```bash
+git clone https://github.com/alysonsz/Finance-API.git
+cd Finance-API
+```
 
-3. Verifique a `ConnectionString` no arquivo `Finance.API/appsettings.json`.
+#### 2. Restaure os pacotes
 
-4. Aplique as migrations e atualize o banco:
-   ```
-   dotnet ef database update --project Finance.Infrastructure --startup-project Finance.API
-   ```
+```bash
+dotnet restore
+```
 
-5. Execute a aplicação:
-   ```
-   dotnet run --project Finance.API
-   ```
+#### 3. Crie o banco de dados
 
-6. Acesse a documentação Swagger:
-   ```
-   https://localhost:{porta}/swagger
-   ```
+```bash
+dotnet ef database update --project Finance.Infrastructure --startup-project Finance.Api
+```
+
+#### 4. Execute a API + Front-end juntos
+
+**Escolha conforme seu sistema operacional:**
+
+- 🪟 **Windows**  
+  Execute o arquivo `start.bat` (clique duas vezes ou rode no terminal):
+
+  ```bash
+  start.bat
+  ```
+
+- 🐧 **Linux / macOS / WSL**  
+  Dê permissão e execute o script:
+
+  ```bash
+  chmod +x start.sh
+  ./start.sh
+  ```
+
+> Isso iniciará automaticamente a API e o front-end Blazor WebAssembly.
 
 ---
 
-### 📌 Próximos Passos
+### 🔗 Endpoints úteis
 
-- Implementar autenticação de usuários (JWT)
-- Adicionar testes unitários
-- Implementar filtros de busca por período, valor e categoria
-- Configurar CI/CD com GitHub Actions
-- Adicionar controle de saldo por usuário
+- API: [https://localhost:7279/swagger](https://localhost:7279/swagger)
+- Frontend (Blazor): aberto automaticamente ao executar o projeto
 
 ---
 
 ### 👨‍💻 Autor
 
-- Alyson Souza Carregosa 👨‍💻 Back-end Developer
+- Alyson Souza Carregosa • Back-end Developer
 
 ---
 
