@@ -1,8 +1,10 @@
-﻿using Finance.Application.Handlers;
+﻿using Finance.Api.Validators.Category;
+using Finance.Application.Handlers;
 using Finance.Contracts.Interfaces.Handlers;
 using Finance.Contracts.Interfaces.Repositories;
 using Finance.Infrastructure.Data;
 using Finance.Infrastructure.Repositories;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -111,5 +113,7 @@ public static class BuilderExtension
         builder.Services.AddTransient<ICategoryHandler, CategoryHandler>();
         builder.Services.AddTransient<ITransactionHandler, TransactionHandler>();
         builder.Services.AddTransient<IUserHandler, UserHandler>();
+
+        builder.Services.AddValidatorsFromAssemblyContaining<CreateCategoryRequestValidator>();
     }
 }

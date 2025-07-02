@@ -1,5 +1,7 @@
 using Finance.Api;
 using Finance.Api.Extensions;
+using Finance.Api.Validators;
+using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,7 @@ builder.AddDocumentation();
 builder.AddServices();
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddControllers();
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
