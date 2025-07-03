@@ -40,8 +40,8 @@ public class TransactionRepository(FinanceDbContext context) : ITransactionRepos
             .AsNoTracking()
             .Include(c => c.Category)
             .Where(t => t.UserId == userId &&
-                        t.PaidOrReceivedAt >= startDate &&
-                        t.PaidOrReceivedAt <= endDate)
+                        (startDate == null || t.PaidOrReceivedAt >= startDate) &&
+                        (endDate == null || t.PaidOrReceivedAt <= endDate))
             .OrderBy(t => t.PaidOrReceivedAt)
             .ToListAsync();
     }
