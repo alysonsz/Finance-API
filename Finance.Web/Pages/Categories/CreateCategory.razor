@@ -21,7 +21,7 @@
         var createRequest = new CreateCategoryRequest
         {
             Title = _request.Title,
-            Description = _request.Description
+            Description = _request.Description!
         };
 
         var response = await CategoryHandler.CreateAsync(createRequest);
