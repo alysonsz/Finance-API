@@ -1,6 +1,5 @@
 using Finance.Api;
 using Finance.Api.Extensions;
-using Finance.Api.Validators;
 using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,3 +30,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
