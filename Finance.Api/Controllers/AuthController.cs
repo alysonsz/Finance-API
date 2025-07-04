@@ -1,6 +1,7 @@
 ﻿using Finance.API.Extensions;
 using Finance.Contracts.Interfaces.Handlers;
 using Finance.Contracts.Requests.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Finance.Api.Controllers;
@@ -33,6 +34,7 @@ public class AuthController(IUserHandler userHandler) : ControllerBase
         return Ok(new { token = response.Data });
     }
 
+    [Authorize]
     [HttpGet("profile")]
     public async Task<IActionResult> GetProfileAsync()
     {
@@ -40,6 +42,7 @@ public class AuthController(IUserHandler userHandler) : ControllerBase
         return this.FromResponse(response);
     }
 
+    [Authorize]
     [HttpPut("profile")]
     public async Task<IActionResult> UpdateProfileAsync(UpdateUserProfileRequest request)
     {
