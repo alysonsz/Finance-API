@@ -1,9 +1,13 @@
 using Finance.Api;
 using Finance.Api.Extensions;
 using FluentValidation.AspNetCore;
+using System.Reflection;
+using MediatR;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(Finance.Application.AssemblyReference).Assembly));
 builder.AddConfiguration();
 builder.AddDatabase();
 builder.AddCors();
