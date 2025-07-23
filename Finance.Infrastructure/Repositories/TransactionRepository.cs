@@ -34,7 +34,7 @@ public class TransactionRepository(FinanceDbContext context) : ITransactionRepos
             .Include(c => c.Category)
             .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
 
-    public async Task<List<Transaction>?> GetByPeriodAsync(long userId, DateTime? startDate, DateTime? endDate)
+    public async Task<List<Transaction>> GetByPeriodAsync(long userId, DateTime? startDate, DateTime? endDate, int pageNumber, int pageSize)
     {
         return await context.Transactions
             .AsNoTracking()
@@ -43,6 +43,30 @@ public class TransactionRepository(FinanceDbContext context) : ITransactionRepos
                         (startDate == null || t.PaidOrReceivedAt >= startDate) &&
                         (endDate == null || t.PaidOrReceivedAt <= endDate))
             .OrderBy(t => t.PaidOrReceivedAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+    }
+
+    public async Task<List<Transaction>> GetAllByPeriodAsync(long userId, DateTime? startDate, DateTime? endDate)
+    {
+        return await context.Transactions
+            .AsNoTracking()
+            .Include(t => t.Category)
+            .Where(t => t.UserId == userId &&
+                        (startDate == null || t.PaidOrReceivedAt >= startDate) &&
+                        (endDate == null || t.PaidOrReceivedAt <= endDate))
+            .OrderBy(t => t.PaidOrReceivedAt)
+            .ToListAsync();
+    }
+
+    public async Task<int> CountByPeriodAsync(long userId, DateTime? startDate, DateTime? endDate)
+    {
+        return await context.Transactions
+            .AsNoTracking()
+            .Where(t => t.UserId == userId &&
+                        (startDate == null || t.PaidOrReceivedAt >= startDate) &&
+                        (endDate == null || t.PaidOrReceivedAt <= endDate))
+            .CountAsync();
     }
 }
