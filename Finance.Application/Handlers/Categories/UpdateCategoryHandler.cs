@@ -7,8 +7,7 @@ using MediatR;
 
 namespace Finance.Application.Handlers.Categories;
 
-public class UpdateCategoryHandler(ICategoryRepository repository)
-    : IRequestHandler<UpdateCategoryCommand, Response<CategoryDto?>>
+public class UpdateCategoryHandler(ICategoryRepository repository) : IRequestHandler<UpdateCategoryCommand, Response<CategoryDto?>>
 {
     public async Task<Response<CategoryDto?>> Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
     {

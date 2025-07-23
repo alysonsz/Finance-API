@@ -7,10 +7,9 @@ using MediatR;
 
 namespace Finance.Application.Handlers.Categories;
 
-public class GetAllCategoriesQueryHandler(ICategoryRepository repository)
-    : IRequestHandler<GetAllCategoriesQuery, PagedResponse<List<CategoryDto>?>>
+public class GetAllCategoriesCommandHandler(ICategoryRepository repository) : IRequestHandler<GetAllCategoriesCommand, PagedResponse<List<CategoryDto>?>>
 {
-    public async Task<PagedResponse<List<CategoryDto>?>> Handle(GetAllCategoriesQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResponse<List<CategoryDto>?>> Handle(GetAllCategoriesCommand request, CancellationToken cancellationToken)
     {
         try
         {

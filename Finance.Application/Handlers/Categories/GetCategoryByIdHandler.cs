@@ -7,8 +7,7 @@ using MediatR;
 
 namespace Finance.Application.Handlers.Categories;
 
-public class GetCategoryByIdHandler(ICategoryRepository repository)
-    : IRequestHandler<GetCategoryByIdCommand, Response<CategoryDto?>>
+public class GetCategoryByIdHandler(ICategoryRepository repository) : IRequestHandler<GetCategoryByIdCommand, Response<CategoryDto?>>
 {
     public async Task<Response<CategoryDto?>> Handle(GetCategoryByIdCommand request, CancellationToken cancellationToken)
     {
