@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Finance.Application.Handlers;
@@ -41,44 +42,57 @@ public class UserHandler(IUserRepository userRepository, IConfiguration configur
         return Response<string>.Success(token);
     }
 
-    public async Task<Response<string>> LoginAsync(LoginRequest request)
+    public async Task<Response<LoginResponse?>> LoginAsync(LoginRequest request)
     {
         var user = await _userRepository.GetByEmailAsync(request.Email);
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
-            return Response<string>.Fail("Credenciais inválidas.");
+            return Response<LoginResponse?>.Fail("Credenciais inválidas.");
         }
 
-        var token = GenerateJwtToken(user);
-        return Response<string>.Success(token);
+        var accessToken = GenerateJwtToken(user);
+        var refreshToken = GenerateRefreshToken();
+
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+        await _userRepository.UpdateAsync(user);
+
+        var loginResponse = new LoginResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken
+        };
+
+        return Response<LoginResponse?>.Success(loginResponse, "Login bem-sucedido!");
     }
 
-    private string GenerateJwtToken(User user)
+    public async Task<Response<LoginResponse?>> RefreshTokenAsync(string accessToken, string refreshToken)
     {
-        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
-        var issuer = _configuration["Jwt:Issuer"];
-        var audience = _configuration["Jwt:Audience"];
+        var principal = GetPrincipalFromExpiredToken(accessToken);
+        var userId = long.Parse(principal.Identity.Name);
 
-        var claims = new[]
+        var user = await _userRepository.GetByIdAsync(userId);
+
+        if (user is null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim("unique_name", user.Name),
-            new Claim("email", user.Email)
+            return Response<LoginResponse?>.Fail("Token inválido ou expirado");
+        }
+
+        var newAccessToken = GenerateJwtToken(user);
+        var newRefreshToken = GenerateRefreshToken();
+
+        user.RefreshToken = newRefreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        await _userRepository.UpdateAsync(user);
+
+        var loginResponse = new LoginResponse
+        {
+            AccessToken = newAccessToken,
+            RefreshToken = newRefreshToken
         };
 
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddHours(4),
-            Issuer = issuer,
-            Audience = audience,
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-        };
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-
-        return tokenHandler.WriteToken(token);
+        return Response<LoginResponse?>.Success(loginResponse, "Token renovado com sucesso!");
     }
 
     public async Task<Response<UserProfileResponse?>> GetProfileAsync()
@@ -114,5 +128,71 @@ public class UserHandler(IUserRepository userRepository, IConfiguration configur
             Email = updated.Email
         };
         return Response<UserProfileResponse?>.Success(dto, "Perfil atualizado com sucesso");
+    }
+
+    private string GenerateJwtToken(User user)
+    {
+        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
+        var issuer = _configuration["Jwt:Issuer"];
+        var audience = _configuration["Jwt:Audience"];
+
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim("unique_name", user.Name),
+            new Claim("email", user.Email)
+        };
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = DateTime.UtcNow.AddHours(4),
+            Issuer = issuer,
+            Audience = audience,
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+
+        return tokenHandler.WriteToken(token);
+    }
+
+    private string GenerateRefreshToken()
+    {
+        var randomNumber = new byte[64];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+
+        return Convert.ToBase64String(randomNumber);
+    }
+
+    private ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+    {
+        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
+        var issuer = _configuration["Jwt:Issuer"];
+        var audience = _configuration["Jwt:Audience"];
+
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidIssuer = issuer,
+            ValidAudience = audience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateLifetime = false
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+        var jwtSecurityToken = securityToken as JwtSecurityToken;
+
+        if (jwtSecurityToken == null || jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+        {
+            throw new SecurityTokenException("Token inválido");
+        }
+
+        return principal;
     }
 }

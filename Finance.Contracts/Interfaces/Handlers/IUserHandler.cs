@@ -10,4 +10,5 @@ public interface IUserHandler
     Task<Response<string>> RegisterAsync(RegisterRequest request);
     Task<Response<UserProfileResponse?>> GetProfileAsync();
     Task<Response<UserProfileResponse?>> UpdateProfileAsync(UpdateUserProfileRequest request);
+    Task<Response<LoginResponse?>> RefreshTokenAsync(string accessToken, string refreshToken);
 }
