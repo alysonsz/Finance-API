@@ -21,6 +21,7 @@ public class GetProfileHandler(IUserRepository userRepository, IHttpContextAcces
         }
 
         var user = await userRepository.GetByIdAsync((long)userId);
+
         if (user == null)
         {
             return Response<UserProfileResponse?>.Fail("Usuário não encontrado.");

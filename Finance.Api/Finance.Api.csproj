@@ -24,7 +24,6 @@
 		<ProjectReference Include="..\Finance.Application\Finance.Application.csproj" />
 		<ProjectReference Include="..\Finance.Infrastructure\Finance.Infrastructure.csproj" />
 		<ProjectReference Include="..\Finance.Contracts\Finance.Contracts.csproj" />
-		<ProjectReference Include="..\Finance.Web\Finance.Web.csproj" />
 	</ItemGroup>
 
 </Project>

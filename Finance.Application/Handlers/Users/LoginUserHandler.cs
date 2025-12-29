@@ -13,6 +13,7 @@ public class LoginUserHandler(IUserRepository userRepository, ITokenService toke
     public async Task<Response<LoginResponse?>> Handle(LoginUserCommand request, CancellationToken cancellationToken)
     {
         var user = await userRepository.GetByEmailAsync(request.Email);
+
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
             return Response<LoginResponse?>.Fail("Credenciais inválidas.");

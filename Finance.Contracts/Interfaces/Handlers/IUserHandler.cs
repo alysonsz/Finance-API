@@ -6,7 +6,7 @@ namespace Finance.Contracts.Interfaces.Handlers;
 
 public interface IUserHandler
 {
-    Task<Response<string>> LoginAsync(LoginRequest request);
+    Task<Response<LoginResponse>> LoginAsync(LoginRequest request);
     Task<Response<string>> RegisterAsync(RegisterRequest request);
     Task<Response<UserProfileResponse?>> GetProfileAsync();
     Task<Response<UserProfileResponse?>> UpdateProfileAsync(UpdateUserProfileRequest request);
