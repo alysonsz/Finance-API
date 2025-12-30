@@ -70,7 +70,7 @@ public class UserHandler(IUserRepository userRepository, IConfiguration configur
     public async Task<Response<LoginResponse?>> RefreshTokenAsync(string accessToken, string refreshToken)
     {
         var principal = GetPrincipalFromExpiredToken(accessToken);
-        var userId = long.Parse(principal.Identity.Name);
+        var userId = long.Parse(principal.Identity!.Name!);
 
         var user = await _userRepository.GetByIdAsync(userId);
 
@@ -132,7 +132,7 @@ public class UserHandler(IUserRepository userRepository, IConfiguration configur
 
     private string GenerateJwtToken(User user)
     {
-        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
+        var key = GetJwtSecurityKey();
         var issuer = _configuration["Jwt:Issuer"];
         var audience = _configuration["Jwt:Audience"];
 
@@ -149,7 +149,7 @@ public class UserHandler(IUserRepository userRepository, IConfiguration configur
             Expires = DateTime.UtcNow.AddHours(4),
             Issuer = issuer,
             Audience = audience,
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -158,7 +158,7 @@ public class UserHandler(IUserRepository userRepository, IConfiguration configur
         return tokenHandler.WriteToken(token);
     }
 
-    private string GenerateRefreshToken()
+    private static string GenerateRefreshToken()
     {
         var randomNumber = new byte[64];
         using var rng = RandomNumberGenerator.Create();
@@ -169,7 +169,7 @@ public class UserHandler(IUserRepository userRepository, IConfiguration configur
 
     private ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
     {
-        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
+        var key = GetJwtSecurityKey();
         var issuer = _configuration["Jwt:Issuer"];
         var audience = _configuration["Jwt:Audience"];
 
@@ -180,19 +180,25 @@ public class UserHandler(IUserRepository userRepository, IConfiguration configur
             ValidIssuer = issuer,
             ValidAudience = audience,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(key),
+            IssuerSigningKey = key,
             ValidateLifetime = false
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
-        var jwtSecurityToken = securityToken as JwtSecurityToken;
 
-        if (jwtSecurityToken == null || jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+        if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
         {
             throw new SecurityTokenException("Token inválido");
         }
 
         return principal;
+    }
+
+    private SymmetricSecurityKey GetJwtSecurityKey()
+    {
+        var keyBytes = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
+        return new SymmetricSecurityKey(keyBytes);
     }
 }
