@@ -198,7 +198,17 @@ public class UserHandler(IUserRepository userRepository, IConfiguration configur
 
     private SymmetricSecurityKey GetJwtSecurityKey()
     {
-        var keyBytes = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
+        var secret = _configuration["Jwt:Key"];
+
+        if (string.IsNullOrEmpty(secret) || secret.Length < 32)
+        {
+            throw new InvalidOperationException("A chave JWT (Jwt:Key) é inválida ou muito curta. Requer no mínimo 32 caracteres.");
+        }
+
+        var keyBytes = Encoding.UTF8.GetBytes(secret);
+
+        #pragma warning disable S6781
         return new SymmetricSecurityKey(keyBytes);
+        #pragma warning restore S6781
     }
 }
