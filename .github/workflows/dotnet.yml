@@ -1,0 +1,29 @@
+name: .NET Build and Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore Finance.sln
+
+    - name: Build
+      run: dotnet build Finance.sln --no-restore --configuration Release
+
+    - name: Test
+      run: dotnet test Finance.sln --no-build --verbosity normal --configuration Release
