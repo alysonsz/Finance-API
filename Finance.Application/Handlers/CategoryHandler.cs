@@ -33,43 +33,27 @@ public class CategoryHandler(ICategoryRepository repository) : ICategoryHandler
 
     public async Task<Response<CategoryDto?>> UpdateAsync(UpdateCategoryRequest request)
     {
-        try
-        {
-            var category = await repository.GetByIdAsync(request.Id, request.UserId);
-            if (category is null)
-                return new Response<CategoryDto?>(null, 404, "Categoria não encontrada");
-
-            category.Title = request.Title;
-            category.Description = request.Description;
-
-            await repository.UpdateAsync(category);
-
-            var dto = MapToDto(category);
-            return new Response<CategoryDto?>(dto, 200, "Categoria atualizada com sucesso");
-        }
-        catch
-        {
-            return new Response<CategoryDto?>(null, 500, "Não foi possível alterar a categoria");
-        }
+        return await HandleCategoryOperationAsync(
+            request.Id,
+            request.UserId,
+            "alterar",
+            "Categoria atualizada com sucesso",
+            async (category) =>
+            {
+                category.Title = request.Title;
+                category.Description = request.Description;
+                await repository.UpdateAsync(category);
+            });
     }
 
     public async Task<Response<CategoryDto?>> DeleteAsync(DeleteCategoryRequest request)
     {
-        try
-        {
-            var category = await repository.GetByIdAsync(request.Id, request.UserId);
-            if (category is null)
-                return new Response<CategoryDto?>(null, 404, "Categoria não encontrada");
-
-            await repository.DeleteAsync(category);
-
-            var dto = MapToDto(category);
-            return new Response<CategoryDto?>(dto, 200, "Categoria excluída com sucesso!");
-        }
-        catch
-        {
-            return new Response<CategoryDto?>(null, 500, "Não foi possível excluir a categoria");
-        }
+        return await HandleCategoryOperationAsync(
+            request.Id,
+            request.UserId,
+            "excluir",
+            "Categoria excluída com sucesso!",
+            async (category) => await repository.DeleteAsync(category));
     }
 
     public async Task<Response<CategoryDto?>> GetByIdAsync(GetCategoryByIdRequest request)
@@ -108,6 +92,30 @@ public class CategoryHandler(ICategoryRepository repository) : ICategoryHandler
         catch
         {
             return new PagedResponse<List<CategoryDto>?>(message: "Não foi possível consultar as categorias", code: 500);
+        }
+    }
+
+    private async Task<Response<CategoryDto?>> HandleCategoryOperationAsync(
+        long id,
+        long userId,
+        string actionNameError,
+        string successMessage,
+        Func<Category, Task> operation)
+    {
+        try
+        {
+            var category = await repository.GetByIdAsync(id, userId);
+            if (category is null)
+                return new Response<CategoryDto?>(null, 404, "Categoria não encontrada");
+
+            await operation(category);
+
+            var dto = MapToDto(category);
+            return new Response<CategoryDto?>(dto, 200, successMessage);
+        }
+        catch
+        {
+            return new Response<CategoryDto?>(null, 500, $"Não foi possível {actionNameError} a categoria");
         }
     }
 

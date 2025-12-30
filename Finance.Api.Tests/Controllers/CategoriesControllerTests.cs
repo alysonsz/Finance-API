@@ -1,8 +1,10 @@
-﻿using Finance.Contracts.Requests.Categories;
+﻿using Finance.Application.Commands.Categories;
+using Finance.Contracts.Requests.Categories;
 using Finance.Contracts.Responses;
 using Finance.Domain.Models.DTOs;
 using FluentAssertions;
 using System.Net;
+using System.Text.Json;
 
 namespace Finance.Api.Tests.Controllers
 {
@@ -10,11 +12,12 @@ namespace Finance.Api.Tests.Controllers
     public class CategoriesControllerTests(CustomWebApplicationFactory factory)
     {
         private readonly HttpClient _client = factory.CreateClient();
+        private readonly JsonSerializerOptions _options = new() { PropertyNameCaseInsensitive = true };
 
         [Fact]
         public async Task CreateCategory_Should_ReturnOk_When_RequestIsValid()
         {
-            var request = new CreateCategoryRequest
+            var request = new CreateCategoryCommand
             {
                 Title = "Viagens (Integration Test)",
                 Description = "Despesas com viagens e passeios"
@@ -22,21 +25,22 @@ namespace Finance.Api.Tests.Controllers
 
             var response = await _client.PostAsJsonAsync("v1/categories", request);
 
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
         }
 
         [Fact]
         public async Task UpdateCategory_Should_ReturnOk_When_RequestIsValid()
         {
-            var createRequest = new CreateCategoryRequest { Title = "Para Atualizar", Description = "Descrição" };
+            var createRequest = new CreateCategoryCommand { Title = "Para Atualizar", Description = "Descrição" };
             var createResponse = await _client.PostAsJsonAsync("v1/categories", createRequest);
-            var createdCategory = await createResponse.Content.ReadFromJsonAsync<Response<CategoryDto>>();
+
+            var createdCategory = await createResponse.Content.ReadFromJsonAsync<CategoryDto>(_options);
 
             createdCategory.Should().NotBeNull();
-            createdCategory!.Data.Should().NotBeNull();
-            var categoryId = createdCategory.Data.Id;
+            createdCategory!.Should().NotBeNull();
+            var categoryId = createdCategory.Id;
 
-            var request = new UpdateCategoryRequest
+            var request = new UpdateCategoryCommand
             {
                 Id = categoryId,
                 Title = "Alimentação (Editado)",
@@ -51,13 +55,14 @@ namespace Finance.Api.Tests.Controllers
         [Fact]
         public async Task DeleteCategory_Should_ReturnOk_When_CategoryExists()
         {
-            var createRequest = new CreateCategoryRequest { Title = "Para Deletar", Description = "Descrição" };
+            var createRequest = new CreateCategoryCommand { Title = "Para Deletar", Description = "Descrição" };
             var createResponse = await _client.PostAsJsonAsync("v1/categories", createRequest);
-            var createdCategory = await createResponse.Content.ReadFromJsonAsync<Response<CategoryDto>>();
+
+            var createdCategory = await createResponse.Content.ReadFromJsonAsync<CategoryDto>(_options);
 
             createdCategory.Should().NotBeNull();
-            createdCategory!.Data.Should().NotBeNull();
-            long categoryIdToDelete = createdCategory.Data.Id;
+            createdCategory!.Should().NotBeNull();
+            long categoryIdToDelete = createdCategory.Id;
 
             var response = await _client.DeleteAsync($"v1/categories/{categoryIdToDelete}");
 
@@ -74,10 +79,16 @@ namespace Finance.Api.Tests.Controllers
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var pagedResponse = await response.Content.ReadFromJsonAsync<PagedResponse<List<CategoryDto>>>();
-            pagedResponse.Should().NotBeNull();
-            pagedResponse.Data.Should().NotBeNull();
-            pagedResponse.Data.Count.Should().BeGreaterThan(0);
+            var content = await response.Content.ReadFromJsonAsync<JsonElement>(_options);
+
+            if (content.ValueKind == JsonValueKind.Array)
+            {
+                content.GetArrayLength().Should().BeGreaterThan(0);
+            }
+            else
+            {
+                content.GetProperty("data").GetArrayLength().Should().BeGreaterThan(0);
+            }
         }
     }
 }

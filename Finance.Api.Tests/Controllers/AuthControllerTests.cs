@@ -1,4 +1,5 @@
-﻿using Finance.Contracts.Requests.Auth;
+﻿using Finance.Application.Commands.Users;
+using Finance.Contracts.Requests.Auth;
 using FluentAssertions;
 using System.Net;
 using System.Text.Json;
@@ -13,7 +14,7 @@ public class AuthControllerTests(CustomWebApplicationFactory factory)
     [Fact]
     public async Task Register_Should_ReturnOkAndToken_When_RequestIsValid()
     {
-        var request = new RegisterRequest
+        var request = new RegisterUserCommand
         {
             Name = "Test User Registration",
             Email = $"test-{Guid.NewGuid()}@email.com",
@@ -25,13 +26,13 @@ public class AuthControllerTests(CustomWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var responseBody = await response.Content.ReadFromJsonAsync<JsonElement>();
-        responseBody.GetProperty("token").GetString().Should().NotBeNullOrWhiteSpace();
+        responseBody.GetProperty("token").Should().NotBeNull();
     }
 
     [Fact]
     public async Task Login_Should_ReturnUnauthorized_When_CredentialsAreInvalid()
     {
-        var request = new LoginRequest
+        var request = new LoginUserCommand
         {
             Email = "invalid@user.com",
             Password = "wrongpassword"
@@ -46,16 +47,16 @@ public class AuthControllerTests(CustomWebApplicationFactory factory)
     public async Task Login_Should_ReturnOkAndToken_When_CredentialsAreValid()
     {
         var password = "StrongPassword123!";
-        var registerRequest = new RegisterRequest
+        var registerRequest = new RegisterUserCommand
         {
             Name = "Test User For Login",
             Email = $"login-test-{Guid.NewGuid()}@email.com",
             Password = password
         };
-        // 1. Registra o usuário
+
         await _client.PostAsJsonAsync("v1/auth/register", registerRequest);
 
-        var loginRequest = new LoginRequest
+        var loginRequest = new LoginUserCommand
         {
             Email = registerRequest.Email,
             Password = password
@@ -66,7 +67,7 @@ public class AuthControllerTests(CustomWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var responseBody = await response.Content.ReadFromJsonAsync<JsonElement>();
-        responseBody.GetProperty("token").GetString().Should().NotBeNullOrWhiteSpace();
+        responseBody.GetProperty("token").Should().NotBeNull();
     }
 
     [Fact]

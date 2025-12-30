@@ -132,7 +132,7 @@ public class TransactionRepositoryTests : IDisposable
 
         var repository = new TransactionRepository(context);
 
-        var result = await repository.GetByPeriodAsync(user.Id, today, today.AddHours(23));
+        var result = await repository.GetByPeriodAsync(user.Id, today, today.AddHours(23), 1, 10);
 
         result.Should().NotBeNull();
         result.Should().ContainSingle();
@@ -150,7 +150,7 @@ public class TransactionRepositoryTests : IDisposable
 
         var repository = new TransactionRepository(context);
 
-        var result = await repository.GetByPeriodAsync(user.Id, null, null);
+        var result = await repository.GetByPeriodAsync(user.Id, null, null, 1, 10);
 
         result.Should().NotBeNull();
         result.Should().HaveCount(1); 

@@ -205,7 +205,8 @@ public class TransactionHandlerTests
         new() { Id = 3, Title = "Internet", Amount = 100, UserId = 123, CategoryId = 1 }
     };
 
-        _mockTransactionRepo.Setup(r => r.GetByPeriodAsync(request.UserId, It.IsAny<DateTime?>(), It.IsAny<DateTime?>()))
+        _mockTransactionRepo.Setup(r => r.GetByPeriodAsync(request.UserId, It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), 
+            request.PageNumber, request.PageSize))
             .ReturnsAsync(transactionsFromDb);
 
         _mockCategoryRepo.Setup(r => r.GetByIdAsync(It.IsAny<long>(), request.UserId))

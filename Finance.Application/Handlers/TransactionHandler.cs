@@ -169,30 +169,31 @@ public class TransactionHandler(
             int.MaxValue
         );
 
-        var expenses = transactions!.Where(t => t.Amount < 0);
-        var incomes = transactions!.Where(t => t.Amount > 0);
+        var expenses = transactions!.Where(t => t.Amount < 0).ToList();
+        var incomes = transactions!.Where(t => t.Amount > 0).ToList();
 
         var report = new TransactionReportResponse
         {
             TotalExpenses = expenses.Sum(e => Math.Abs(e.Amount)),
             TotalIncomes = incomes.Sum(i => i.Amount),
-            ExpensesByCategory = expenses
-                    .GroupBy(e => e.Category?.Title ?? "Unknown")
-                    .Select(g => new CategorySummaryResponse
-                    {
-                        CategoryName = g.Key,
-                        Total = Math.Abs(g.Sum(t => t.Amount))
-                    }).ToList(),
-            IncomesByCategory = incomes
-                    .GroupBy(i => i.Category?.Title ?? "Unknown")
-                    .Select(g => new CategorySummaryResponse
-                    {
-                        CategoryName = g.Key,
-                        Total = g.Sum(t => t.Amount)
-                    }).ToList()
+
+            ExpensesByCategory = GetCategorySummaries(expenses),
+            IncomesByCategory = GetCategorySummaries(incomes)
         };
 
         return Response<TransactionReportResponse>.Success(report);
+    }
+
+    private static List<CategorySummaryResponse> GetCategorySummaries(IEnumerable<Transaction> transactions)
+    {
+        return transactions
+            .GroupBy(t => t.Category?.Title ?? "Unknown")
+            .Select(g => new CategorySummaryResponse
+            {
+                CategoryName = g.Key,
+                Total = Math.Abs(g.Sum(t => t.Amount))
+            })
+            .ToList();
     }
 
     private static TransactionDto MapToDto(Transaction transaction, Category category)

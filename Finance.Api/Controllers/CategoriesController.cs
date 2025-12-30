@@ -11,11 +11,13 @@ namespace Finance.Api.Controllers;
 [Authorize]
 [ApiController]
 [Route("v1/categories")]
-public class CategoriesController(IMediator mediator, ICategoryHandler handler) : ControllerBase
+public class CategoriesController(IMediator mediator) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> CreateAsync(CreateCategoryCommand request)
     {
+        request.UserId = User.GetUserId();
+
         var response = await mediator.Send(request);
 
         return response.IsSuccess
