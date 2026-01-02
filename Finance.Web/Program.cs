@@ -24,7 +24,7 @@ builder.Services.AddAuthorizationCore();
 
 builder.Services.AddHttpClient(WebConfiguration.HttpClientName, client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7279");
+    client.BaseAddress = new Uri("http://localhost:7279");
 }).AddHttpMessageHandler<AuthMessageHandler>();
 
 builder.Services.AddScoped(sp =>
