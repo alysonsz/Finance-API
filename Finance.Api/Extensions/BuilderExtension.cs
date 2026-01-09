@@ -25,7 +25,13 @@ public static class BuilderExtension
     public static void AddDatabase(this WebApplicationBuilder builder)
     {
         builder.Services.AddDbContext<FinanceDbContext>(o =>
-            o.UseSqlServer(ApiConfiguration.ConnectionString));
+            o.UseSqlServer(ApiConfiguration.ConnectionString, sqlOptions =>
+            {
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(10),
+                    errorNumbersToAdd: null);
+            }));
     }
 
     public static void AddCors(this WebApplicationBuilder builder)
@@ -34,7 +40,7 @@ public static class BuilderExtension
         options => options.AddPolicy(
                 ApiConfiguration.CorsPolicyName,
                 policy => policy
-                    .WithOrigins("https://localhost:7243")
+                    .SetIsOriginAllowed(origin => true)
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials()

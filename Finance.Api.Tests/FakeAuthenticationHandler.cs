@@ -14,7 +14,7 @@ public class FakeAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptio
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, "1"),
-            new Claim("email", "teste@email.com")
+            new Claim("email", "teste@user.com")
         };
         var identity = new ClaimsIdentity(claims, AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
