@@ -2,29 +2,39 @@
 
 ### 📌 Descrição
 
-A **Finance API** é uma aplicação completa para controle de transações financeiras, desenvolvida com .NET 8 e Blazor WebAssembly, estruturada com Clean Architecture para promover organização, reutilização e clareza entre suas camadas de domínio, aplicação, infraestrutura, API e interface web.
+A **Finance API** é uma aplicação robusta de Back-end para controle de transações financeiras. Desenvolvida com **.NET 8**, ela segue os princípios da **Clean Architecture** para garantir desacoplamento, testabilidade e manutenção.
+
+O projeto foi modernizado para uma abordagem **API-First**, removendo dependências de front-end acopladas e focando em performance, containerização (**Docker**) e observabilidade avançada (**Serilog + Seq**).
 
 ---
 
 ### 🚀 Funcionalidades
 
-- Cadastro e gerenciamento de categorias
-- Registro de receitas e despesas
-- Autenticação via JWT
-- Interface web com Blazor integrada
-- Documentação automática via Swagger
-- Testes automatizados
+- **Gestão Financeira:** CRUD completo de Categorias e Transações (Receitas/Despesas).
+- **Autenticação Segura:** Implementação de Identity e JWT (JSON Web Tokens).
+- **Observabilidade:** Logs estruturados centralizados com Serilog e dashboard no Seq.
+- **Containerização:** Ambiente de desenvolvimento completo orquestrado via Docker Compose.
+- **Documentação:** Swagger/OpenAPI auto-gerado.
+- **Testes:** Testes de Integração e Unidade com xUnit.
 
 ---
 
 ### 🛠️ Tecnologias
 
-- Backend: .NET 8, ASP.NET Core, Entity Framework Core  
-- Frontend: Blazor WebAssembly  
-- Arquitetura: Clean Architecture (Domain, Application, Infrastructure, API, Web)  
-- Banco de dados: SQL Server LocalDB (via EF Core Migrations)  
-- Ferramentas: AutoMapper, Swagger/OpenAPI  
-- Testes: XUnit
+**Core:**
+- .NET 8 SDK
+- ASP.NET Core Web API
+- Entity Framework Core
+
+**Infraestrutura & DevOps:**
+- **Docker & Docker Compose:** Orquestração de containers.
+- **SQL Server 2022:** Banco de dados relacional (Container).
+- **Seq:** Servidor de logs estruturados (Container).
+- **Serilog:** Biblioteca de logging.
+
+**Arquitetura:**
+- Clean Architecture (Domain, Application, Infrastructure, Contracts, API)
+- Pattern: Repository & Handler (Mediator style)
 
 ---
 
@@ -47,6 +57,7 @@ Finance/
 │   │   └── BuilderExtension.cs
 │   ├── ApiConfiguration.cs
 │   ├── appsettings.json
+│   ├── DockerFile
 │   ├── Program.cs
 │   └── Finance.API.csproj
 │
@@ -129,108 +140,72 @@ Finance/
 │   │   ├── CategoryRepository.cs
 │   │   ├── TransactionRepository.cs
 │   │   └── UserRepository.cs
-│   └── Finance.Infrastructure.csproj
-│
-├── Finance.Web/                         # Camada Web (Frontend Blazor Pages)
-│   ├── Authentication/
-│   │   └── CustomAuthenticationStateProvider.cs
-│   ├── Handlers/
-│   │   ├── AppPreferencesHandler.cs
-│   │   ├── AppThemeHandler.cs
-│   │   ├── AuthHandler.cs
-│   │   ├── AuthMessageHandler.cs
-│   │   ├── CategoryHandler.cs
-│   │   └── TransactionHandler.cs
-│   ├── Layout/
-│   │   ├── LoginLayout.razor
-│   │   └── MainLayout.razor
-│   ├── Pages/
-│   │   ├── Categories/
-│   │   │   ├── CreateCategory.razor
-│   │   │   ├── EditCategory.razor
-│   │   │   └── GetAllCategories.razor
-│   │   │        └── GetAllCategories.razor.cs
-│   │   ├── Transactions/
-│   │   │   ├── CreateTransaction.razor
-│   │   │   ├── EditTransaction.razor
-│   │   │   └── GetAllTransactions.razor
-│   │   │        └── GetAllTransactions.razor.cs
-│   │   ├── About.razor
-│   │   ├── Home.razor
-│   │   ├── Login.razor
-│   │   ├── RedirectToLogin.razor
-│   │   ├── Register.razor
-│   │   ├── Reports.razor
-│   │   └── Settings.razor
-│   ├── Shared/
-│   │   ├── CategoryForm.razor
-│   │   └── TransactionForm.razor
-│   ├── wwwroot/
-│   │   └── css/
-│   │       └── app.css
-│   ├── WebConfiguration.cs
-│   ├── Program.cs
-│   ├── App.razor
-│   ├── _Imports.razor
-└── └── Finance.Web.csproj
+└── └── Finance.Infrastructure.csproj
 ```
 
 ---
 
-### ✅ Como executar o projeto
+### 🐳 Como executar (Modo Docker - Recomendado)
+
+Este é o método mais rápido e limpo, pois sobe o Banco, a API e o Seq automaticamente.
+
+**Pré-requisitos:**
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado.
 
 #### 1. Clone o repositório
-
 ```bash
 git clone https://github.com/alysonsz/Finance-API.git
 cd Finance-API
 ```
 
-#### 2. Restaure os pacotes
+#### 2. Suba o ambiente
+Na raiz do projeto (onde está o `docker-compose.yml`), execute:
 
 ```bash
-dotnet restore
+docker-compose up -d --build
 ```
 
-#### 3. Crie o banco de dados
+#### 3. Acesse os serviços
 
-```bash
-dotnet ef database update --project Finance.Infrastructure --startup-project Finance.Api
-```
-
-#### 4. Execute a API + Front-end juntos
-
-**Escolha conforme seu sistema operacional:**
-
-- 🪟 **Windows**  
-  Execute o arquivo `start.bat` (clique duas vezes ou rode no terminal):
-
-  ```bash
-  start.bat
-  ```
-
-- 🐧 **Linux / macOS / WSL**  
-  Dê permissão e execute o script:
-
-  ```bash
-  chmod +x start.sh
-  ./start.sh
-  ```
-
-> Isso iniciará automaticamente a API e o front-end Blazor WebAssembly.
+| Serviço | URL / Endereço | Credenciais (se houver) |
+| :--- | :--- | :--- |
+| **API (Swagger)** | [http://localhost:5000/swagger](http://localhost:5000/swagger) | - |
+| **Seq (Logs)** | [http://localhost:5341](http://localhost:5341) | User: `admin` <br> Pass: `MyStrongPassword123!` |
+| **SQL Server** | `localhost,1433` | User: `sa` <br> Pass: `MyStrongPassword123!` |
 
 ---
 
-### 🔗 Endpoints úteis
+### 💻 Como executar (Modo Manual / Debug)
 
-- API: [https://localhost:7279/swagger](https://localhost:7279/swagger)
-- Frontend (Blazor): aberto automaticamente ao executar o projeto
+Caso queira rodar a API fora do Docker (pelo Visual Studio ou CLI), mas mantendo as dependências (Banco/Seq) no Docker.
+
+1. **Suba apenas a infraestrutura:**
+   ```bash
+   docker-compose up -d finance-db finance-seq
+   ```
+
+2. **Aplique as Migrations (apenas na primeira vez):**
+   ```bash
+   dotnet ef database update --project Finance.Infrastructure --startup-project Finance.Api
+   ```
+
+2. **Rode a API:**
+   ```bash
+   dotnet run --project Finance.Api
+   ```
+
+### 🧪 Testes
+
+O projeto utiliza xUnit para testes automatizados. Para executá-los:
+   ```bash
+   dotnet test   
+   ```
 
 ---
 
 ### 👨‍💻 Autor
 
-- Alyson Souza Carregosa • Back-end Developer
+- Alyson Souza Carregosa • .NET Backend Developer
 
 ---
 
