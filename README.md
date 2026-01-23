@@ -1,214 +1,178 @@
-# Finance API
+# 💰 Finance API — Gestão Financeira Enterprise
 
-### 📌 Descrição
+![.NET 8](https://img.shields.io/badge/.NET%208-512BD4?style=for-the-badge\&logo=dotnet\&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge\&logo=docker\&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge\&logo=redis\&logoColor=white)
+![Serilog + Seq](https://img.shields.io/badge/Serilog-Seq-00CCB3?style=for-the-badge\&logo=files\&logoColor=white)
+![SQL Server](https://img.shields.io/badge/SQL%20Server-CC2927?style=for-the-badge\&logo=microsoft-sql-server\&logoColor=white)
 
-A **Finance API** é uma aplicação robusta de Back-end para controle de transações financeiras. Desenvolvida com **.NET 8**, ela segue os princípios da **Clean Architecture** para garantir desacoplamento, testabilidade e manutenção.
+A **Finance API** é uma solução de back-end **robusta, segura e de alta performance** para controle e gestão de transações financeiras. Desenvolvida em **.NET 8**, aplica rigorosamente os princípios da **Clean Architecture**, garantindo baixo acoplamento, alta testabilidade e escalabilidade.
 
-O projeto foi modernizado para uma abordagem **API-First**, removendo dependências de front-end acopladas e focando em performance, containerização (**Docker**) e observabilidade avançada (**Serilog + Seq**).
-
----
-
-### 🚀 Funcionalidades
-
-- **Gestão Financeira:** CRUD completo de Categorias e Transações (Receitas/Despesas).
-- **Autenticação Segura:** Implementação de Identity e JWT (JSON Web Tokens).
-- **Observabilidade:** Logs estruturados centralizados com Serilog e dashboard no Seq.
-- **Containerização:** Ambiente de desenvolvimento completo orquestrado via Docker Compose.
-- **Documentação:** Swagger/OpenAPI auto-gerado.
-- **Testes:** Testes de Integração e Unidade com xUnit.
+O projeto vai além do CRUD tradicional, focando em **Performance** (Cache Distribuído), **Segurança** (JWT & Data Protection) e **Observabilidade** (Logs Estruturados), simulando um ambiente real de produção pronto para crescer.
 
 ---
 
-### 🛠️ Tecnologias
+## 🏗️ Arquitetura & Design
 
-**Core:**
-- .NET 8 SDK
-- ASP.NET Core Web API
-- Entity Framework Core
+A aplicação foi desenhada para suportar **alta concorrência de leitura**, mantendo **consistência de dados** e **simplicidade operacional**, utilizando uma arquitetura containerizada e orquestrada.
 
-**Infraestrutura & DevOps:**
-- **Docker & Docker Compose:** Orquestração de containers.
-- **SQL Server 2022:** Banco de dados relacional (Container).
-- **Seq:** Servidor de logs estruturados (Container).
-- **Serilog:** Biblioteca de logging.
+```mermaid
+graph TD
+    Client[Cliente / Swagger] -->|HTTP Request| API[Finance API]
+    subgraph "Camada de Dados"
+        API <-->|Estratégia Cache-Aside| Redis[Redis Cache]
+        API <-->|EF Core| SQL[SQL Server 2022]
+    end
 
-**Arquitetura:**
-- Clean Architecture (Domain, Application, Infrastructure, Contracts, API)
-- Pattern: Repository & Handler (Mediator style)
-
----
-
-### 📁 Estrutura de Diretórios do Projeto
-
-```
-Finance/
-├── Finance.sln
-│
-├── Finance.Api/                        # Camada de apresentação (API)
-│   ├── Controllers/
-│   │   ├── AuthController.cs
-│   │   ├── CategoriesController.cs
-│   │   └── TransactionController.cs
-│   ├── Properties/
-│   │   ├── launchSettings.json
-│   │   └── serviceDependencies.json
-│   ├── Extensions/
-│   │   ├── ActionResultExtension.cs
-│   │   └── BuilderExtension.cs
-│   ├── ApiConfiguration.cs
-│   ├── appsettings.json
-│   ├── DockerFile
-│   ├── Program.cs
-│   └── Finance.API.csproj
-│
-├── Finance.Application/                # Camada de aplicação (handlers e claim do JWT)
-│   ├── Extensions/
-│   │   └── ClaimsPrincipalExtension.cs
-│   ├── Handlers/
-│   │   ├── CategoryHandler.cs
-│   │   ├── TransactionHandler.cs
-│   │   └── UserHandler.cs
-│   └── Finance.Application.csproj
-│
-├── Finance.Contracts/                     # Camada de compartilhamento (interfaces, requests, responses)
-│   ├── Requests/
-│   │   ├── Auth/
-│   │   │   ├── LoginRequest.cs
-│   │   │   ├── RegisterRequest.cs
-│   │   ├── └── UpdateUserProfileRequest.cs
-│   │   ├── Categories/
-│   │   │   ├── CreateCategoryRequest.cs
-│   │   │   ├── DeleteCategoryRequest.cs
-│   │   │   ├── GetAllCategoriesRequest.cs
-│   │   │   ├── GetCategoryByIdRequest.cs
-│   │   ├── └── UpdateCategoryRequest.cs
-│   │   ├── Transacations/
-│   │   │   ├── CreateTransactionRequest.cs
-│   │   │   ├── DeleteTransactionRequest.cs
-│   │   │   ├── GetTransactionByIdRequest.cs
-│   │   │   ├── GetTransactionReportRequest.cs
-│   │   │   ├── GetTransactionByPeriodRequest.cs
-│   │   ├── └── UpdateTransactionRequest.cs
-│   │   ├── PagedRequest.cs
-│   │   └── Request.cs
-│   ├── Responses/
-│   │   ├── Auth/
-│   │   ├── └── UserProfileResponse.cs
-│   │   ├── Categories/
-│   │   ├── └── CategorySummaryResponse.cs
-│   │   ├── Transacations/
-│   │   ├── └── TransactionReportResponse.cs
-│   │   ├── PagedResponse.cs
-│   │   └── Response.cs
-│   ├── Interfaces/
-│   │   ├── Handlers/
-│   │   │   ├── IAppPreferencesHandler.cs
-│   │   │   ├── ICategoryHandler.cs
-│   │   │   ├── ITransactionHandler.cs
-│   │   ├── └── IUserHandler.cs
-│   │   ├── Repositories/
-│   │   │   ├── ICategoryRepository.cs
-│   │   │   ├── ITransactionRepository.cs
-│   ├── └── └── IUserRepository.cs
-│   └── Finance.Contracts.csproj
-│
-├── Finance.Domain/                     # Camada de domínio (entidades e contratos)
-│   ├── Common/
-│   │   └── DateTimeExtension.cs
-│   ├── Enums/
-│   │   └── ETransactionType.cs
-│   ├── Models/
-│   │   │   ├── DTOs/
-│   │   │   │   ├── CategoryDto.cs
-│   │   │   └── └── TransactionDto.cs
-│   │   ├── Category.cs
-│   │   ├── Transaction.cs
-│   │   └── User.cs
-│   └── Finance.Domain.csproj
-│
-├── Finance.Infrastructure/             # Camada de infraestrutura (banco de dados e repositórios)
-│   ├── Data/
-│   │   ├──  Mappings/
-│   │   │    ├── CategoryMapping.cs
-│   │   │    ├── TransactionMapping.cs
-│   │   └──  └── UserMapping.cs
-│   └── FinanceDbContext.cs
-│   ├── Migrations/
-│   │   ├── InitialCreate.cs
-│   │   └── FinanceDbContextModelSnapshot.cs
-│   ├── Repositories/
-│   │   ├── CategoryRepository.cs
-│   │   ├── TransactionRepository.cs
-│   │   └── UserRepository.cs
-└── └── Finance.Infrastructure.csproj
+    subgraph "Camada de Observabilidade"
+        API -.->|Logs Estruturados| Seq[Seq Dashboard]
+    end
 ```
 
 ---
 
-### 🐳 Como executar (Modo Docker - Recomendado)
+## 🌟 Diferenciais Técnicos Implementados
 
-Este é o método mais rápido e limpo, pois sobe o Banco, a API e o Seq automaticamente.
+### ⚡ Cache Distribuído (Redis)
 
-**Pré-requisitos:**
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado.
+* Implementação estratégica do padrão **Cache-Aside (Lazy Loading)**
 
-#### 1. Clone o repositório
+* **Leitura Otimizada (`GetById`):**
+  Respostas em sub-milissegundos para entidades acessadas com frequência.
+
+* **Consistência em Escritas (Invalidação Cirúrgica):**
+  As chaves de cache são invalidadas em operações de **Update** e **Delete**, garantindo que nenhum dado obsoleto seja retornado.
+
+* **Listagens (`GetAll`):**
+  Decisão arquitetural consciente de manter listagens paginadas **direto no banco**, evitando complexidade desnecessária de cache.
+
+### 🔍 Observabilidade
+
+* Centralização de **logs estruturados** com **Serilog + Seq**
+* Permite rastreio de falhas, auditoria de operações e análise de performance em tempo real
+
+### 🔐 Segurança
+
+* Autenticação via **JWT (JSON Web Tokens)**
+* Persistência segura de chaves criptográficas utilizando **ASP.NET Data Protection API**
+* Chaves armazenadas em volumes Docker compartilhados, garantindo resiliência entre containers
+
+### 🐳 Containerização
+
+* Ambiente **plug-and-play** via **Docker Compose**
+* Toda a infraestrutura sobe com um único comando:
+
+  * API
+  * SQL Server
+  * Redis
+  * Seq
+
+---
+
+## 🛠️ Tech Stack
+
+| Categoria           | Tecnologias                                                      |
+| ------------------- | ---------------------------------------------------------------- |
+| **Core**            | .NET 8, C# 12                                                    |
+| **Arquitetura**     | Clean Architecture, Repository Pattern, Handlers estilo Mediator |
+| **Banco de Dados**  | SQL Server 2022, Entity Framework Core 8                         |
+| **Performance**     | Redis, StackExchange.Redis, IDistributedCache                    |
+| **Observabilidade** | Serilog, Seq                                                     |
+| **Documentação**    | Swagger / OpenAPI (com suporte a Auth)                           |
+| **Qualidade**       | xUnit, Moq, FluentAssertions, FluentValidation                   |
+| **DevOps**          | Docker, Docker Compose                                           |
+
+---
+
+## 🚀 Como Rodar o Projeto
+
+A forma **mais simples e profissional** de executar o projeto é utilizando **Docker**. Não é necessário instalar o .NET SDK nem compilar manualmente.
+
+### ✅ Pré-requisitos
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado
+
+### ▶️ Passo a Passo
+
 ```bash
 git clone https://github.com/alysonsz/Finance-API.git
 cd Finance-API
 ```
 
-#### 2. Suba o ambiente
-Na raiz do projeto (onde está o `docker-compose.yml`), execute:
-
 ```bash
-docker-compose up -d --build
+docker-compose up -d
 ```
 
-#### 3. Acesse os serviços
-
-| Serviço | URL / Endereço | Credenciais (se houver) |
-| :--- | :--- | :--- |
-| **API (Swagger)** | [http://localhost:5000/swagger](http://localhost:5000/swagger) | - |
-| **Seq (Logs)** | [http://localhost:5341](http://localhost:5341) | User: `admin` <br> Pass: `MyStrongPassword123!` |
-| **SQL Server** | `localhost,1433` | User: `sa` <br> Pass: `MyStrongPassword123!` |
+⏳ Aguarde **30 a 60 segundos** para o SQL Server inicializar e aplicar as migrações automaticamente.
 
 ---
 
-### 💻 Como executar (Modo Manual / Debug)
+## 🔗 Acesso aos Serviços
 
-Caso queira rodar a API fora do Docker (pelo Visual Studio ou CLI), mas mantendo as dependências (Banco/Seq) no Docker.
+| Serviço           | URL                                                            | Credenciais (Dev)                               |
+| ----------------- | -------------------------------------------------------------- | ----------------------------------------------- |
+| **API (Swagger)** | [http://localhost:5000/swagger](http://localhost:5000/swagger) | —                                               |
+| **Seq Logs**      | [http://localhost:5341](http://localhost:5341)                 | User: `admin` <br> Pass: `MyStrongPassword123!` |
+| **SQL Server**    | `localhost:1433`                                               | User: `sa` <br> Pass: `MyStrongPassword123!`    |
 
-1. **Suba apenas a infraestrutura:**
-   ```bash
-   docker-compose up -d finance-db finance-seq
-   ```
+---
 
-2. **Aplique as Migrations (apenas na primeira vez):**
-   ```bash
-   dotnet ef database update --project Finance.Infrastructure --startup-project Finance.Api
-   ```
+## 🧪 Testando a Performance (Redis)
 
-2. **Rode a API:**
-   ```bash
-   dotnet run --project Finance.Api
-   ```
+Para validar a eficiência da arquitetura:
 
-### 🧪 Testes
+1. Acesse o **Swagger** → [http://localhost:5000/swagger](http://localhost:5000/swagger)
+2. Crie uma transação (`POST v1/transactions`)
+3. Busque a transação com `GET v1/transactions/{id}`
 
-O projeto utiliza xUnit para testes automatizados. Para executá-los:
-   ```bash
-   dotnet test   
-   ```
+* **Primeira chamada:** SQL Server → grava no Redis (**Cache Miss**) ~50ms+
+* **Segunda chamada:** retorno direto do Redis (**Cache Hit**) < 5ms
+
+4. Execute um **UPDATE** ou **DELETE** na mesma transação
+
+✅ A chave é invalidada automaticamente e a próxima leitura reflete os dados atualizados.
+
+---
+
+## 📂 Estrutura do Projeto
+
+A solução segue rigorosamente os princípios da **Clean Architecture**, com responsabilidades bem definidas e uma camada dedicada para **contratos compartilhados**, evitando acoplamentos indevidos entre API, Application e clientes.
+
+```
+Finance API
+├── 📁 Finance.Domain          # Entidades, Enums, Interfaces e Regras de Negócio
+├── 📁 Finance.Application     # Casos de Uso (Handlers), Validações, Mapeamentos
+├── 📁 Finance.Contracts       # DTOs, Requests, Responses e Interfaces Compartilhadas
+├── 📁 Finance.Infrastructure  # EF Core, Redis, Repositórios, Migrations
+├── 📁 Finance.Api             # Controllers, Docker, DI, Middlewares
+└── 📁 Finance.Tests           # Testes (organizados por camada: Domain, Application, Api)
+```
+
+> 💡 **Observação:** a camada de testes é organizada por contexto/camada para refletir a arquitetura da solução, facilitando manutenção, leitura e evolução dos testes.
+---
+
+## 🔐 Autenticação
+
+A API utiliza **JWT** para proteger os endpoints.
+
+1. Registre um usuário: `POST v1/auth/register`
+2. Faça login: `POST v1/auth/login`
+3. Copie o `accessToken` retornado
+4. No Swagger, clique em **Authorize** e informe:
+
+```
+Bearer SEU_TOKEN
+```
 
 ---
 
 ### 👨‍💻 Autor
 
-- Alyson Souza Carregosa • .NET Backend Developer
+Desenvolvido por **Alyson Souza Carregosa**
+Focado em **Engenharia de Software de Alta Performance** e **Arquitetura de Soluções**.
 
 ---
 
-### 📝 Licença
+## 📄 Licença
 
-Este projeto está disponível sob a licença MIT.
+Este projeto está licenciado sob a **MIT License**.
