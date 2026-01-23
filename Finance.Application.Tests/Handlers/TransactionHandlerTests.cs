@@ -1,5 +1,6 @@
 ﻿using Finance.Application.Handlers;
 using Finance.Contracts.Interfaces.Repositories;
+using Finance.Contracts.Interfaces.Services;
 using Finance.Contracts.Requests.Transactions;
 using Finance.Domain.Enums;
 using FluentAssertions;
@@ -11,17 +12,16 @@ public class TransactionHandlerTests
 {
     private readonly Mock<ITransactionRepository> _mockTransactionRepo;
     private readonly Mock<ICategoryRepository> _mockCategoryRepo;
+    private readonly Mock<ICacheService> _cacheMock;
     private readonly TransactionHandler _handler;
 
     public TransactionHandlerTests()
     {
         _mockTransactionRepo = new Mock<ITransactionRepository>();
         _mockCategoryRepo = new Mock<ICategoryRepository>();
+        _cacheMock = new Mock<ICacheService>();
 
-        _handler = new TransactionHandler(
-            _mockTransactionRepo.Object,
-            _mockCategoryRepo.Object
-        );
+        _handler = new TransactionHandler(_mockTransactionRepo.Object, _mockCategoryRepo.Object, _cacheMock.Object);
     }
 
     [Fact]
@@ -205,7 +205,7 @@ public class TransactionHandlerTests
         new() { Id = 3, Title = "Internet", Amount = 100, UserId = 123, CategoryId = 1 }
     };
 
-        _mockTransactionRepo.Setup(r => r.GetByPeriodAsync(request.UserId, It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), 
+        _mockTransactionRepo.Setup(r => r.GetByPeriodAsync(request.UserId, It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
             request.PageNumber, request.PageSize))
             .ReturnsAsync(transactionsFromDb);
 

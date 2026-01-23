@@ -1,5 +1,6 @@
 ﻿using Finance.Application.Handlers;
 using Finance.Contracts.Interfaces.Repositories;
+using Finance.Contracts.Interfaces.Services;
 using Finance.Contracts.Requests.Categories;
 using FluentAssertions;
 using Moq;
@@ -9,12 +10,14 @@ namespace Finance.Application.Tests.Handlers;
 public class CategoryHandlerTests
 {
     private readonly Mock<ICategoryRepository> _mockRepo;
+    private readonly Mock<ICacheService> _cacheMock;
     private readonly CategoryHandler _handler;
 
     public CategoryHandlerTests()
     {
         _mockRepo = new Mock<ICategoryRepository>();
-        _handler = new CategoryHandler(_mockRepo.Object);
+        _cacheMock = new Mock<ICacheService>();
+        _handler = new CategoryHandler(_mockRepo.Object, _cacheMock.Object);
     }
 
     [Fact]
@@ -105,8 +108,8 @@ public class CategoryHandlerTests
         var result = await _handler.UpdateAsync(request);
 
         result.Data.Should().NotBeNull();
-        result.Data?.Title.Should().Be(request.Title); 
-        result.Data?.Description.Should().Be(request.Description); 
+        result.Data?.Title.Should().Be(request.Title);
+        result.Data?.Description.Should().Be(request.Description);
 
         _mockRepo.Verify(r => r.GetByIdAsync(request.Id, request.UserId), Times.Once);
         _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<Domain.Models.Category>()), Times.Once);
