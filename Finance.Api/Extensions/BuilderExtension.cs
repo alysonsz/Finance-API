@@ -74,6 +74,16 @@ public static class BuilderExtension
         return services;
     }
 
+    public static void AddCache(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddStackExchangeRedisCache(options =>
+        {
+            var connection = builder.Configuration.GetConnectionString("Redis");
+            options.Configuration = connection;
+            options.InstanceName = "Finance_";
+        });
+    }
+
     public static void AddDocumentation(this WebApplicationBuilder builder)
     {
         builder.Services.AddEndpointsApiExplorer();
@@ -123,6 +133,7 @@ public static class BuilderExtension
         builder.Services.AddTransient<IUserHandler, UserHandler>();
 
         builder.Services.AddTransient<ITokenService, TokenService>();
+        builder.Services.AddTransient<ICacheService, CacheService>();
 
         builder.Services.AddValidatorsFromAssemblyContaining<CreateCategoryRequestValidator>();
     }

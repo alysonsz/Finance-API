@@ -19,8 +19,10 @@ try
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
         .Enrich.FromLogContext());
+
     builder.AddConfiguration();
     builder.AddDatabase();
+    builder.AddCache();
     builder.AddCors();
     builder.AddDocumentation();
     builder.AddServices();
@@ -32,6 +34,8 @@ try
     builder.Services.AddJwtAuthentication(builder.Configuration);
 
     var app = builder.Build();
+
+    app.UseSerilogRequestLogging();
 
     if (app.Environment.IsDevelopment())
     {

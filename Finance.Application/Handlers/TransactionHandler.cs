@@ -1,5 +1,6 @@
 ﻿using Finance.Contracts.Interfaces.Handlers;
 using Finance.Contracts.Interfaces.Repositories;
+using Finance.Contracts.Interfaces.Services;
 using Finance.Contracts.Requests.Transactions;
 using Finance.Contracts.Responses;
 using Finance.Contracts.Responses.Categories;
@@ -12,8 +13,7 @@ using Finance.Domain.Models.DTOs;
 namespace Finance.Application.Handlers;
 
 public class TransactionHandler(
-    ITransactionRepository transactionRepository,
-    ICategoryRepository categoryRepository) : ITransactionHandler
+    ITransactionRepository transactionRepository, ICategoryRepository categoryRepository, ICacheService cacheService) : ITransactionHandler
 {
     public async Task<Response<TransactionDto?>> CreateAsync(CreateTransactionRequest request)
     {
@@ -57,8 +57,14 @@ public class TransactionHandler(
         try
         {
             var transaction = await transactionRepository.GetByIdAsync(request.Id, request.UserId);
+
             if (transaction is null)
                 return new Response<TransactionDto?>(null, 404, "Transação não encontrada");
+
+            var category = await categoryRepository.GetByIdAsync(transaction.CategoryId, transaction.UserId);
+
+            if (category is null)
+                return new Response<TransactionDto?>(null, 404, "Categoria vinculada não encontrada");
 
             transaction.CategoryId = request.CategoryId;
             transaction.Amount = request.Amount;
@@ -68,9 +74,7 @@ public class TransactionHandler(
 
             await transactionRepository.UpdateAsync(transaction);
 
-            var category = await categoryRepository.GetByIdAsync(transaction.CategoryId, transaction.UserId);
-            if (category is null)
-                return new Response<TransactionDto?>(null, 404, "Categoria vinculada não encontrada");
+            await cacheService.RemoveAsync($"transaction:{transaction.Id}:user:{request.UserId}");
 
             var dto = MapToDto(transaction, category);
             return new Response<TransactionDto?>(dto, 200, "Transação atualizada com sucesso!");
@@ -86,14 +90,17 @@ public class TransactionHandler(
         try
         {
             var transaction = await transactionRepository.GetByIdAsync(request.Id, request.UserId);
+
             if (transaction is null)
                 return new Response<TransactionDto?>(null, 404, "Transação não encontrada");
 
             var category = await categoryRepository.GetByIdAsync(transaction.CategoryId, transaction.UserId);
+
             if (category is null)
                 return new Response<TransactionDto?>(null, 404, "Categoria vinculada não encontrada");
 
             await transactionRepository.DeleteAsync(transaction);
+            await cacheService.RemoveAsync($"transaction:{transaction.Id}:user:{request.UserId}");
 
             var dto = MapToDto(transaction, category);
             return new Response<TransactionDto?>(dto, 200, "Transação excluída com sucesso!");
@@ -108,16 +115,27 @@ public class TransactionHandler(
     {
         try
         {
+            string cacheKey = $"transaction:{request.Id}:user:{request.UserId}";
+
+            var cachedTransaction = await cacheService.GetAsync<TransactionDto>(cacheKey);
+
+            if (cachedTransaction is not null)
+                return new Response<TransactionDto?>(cachedTransaction, 200, "Transação recuperada do cache");
+
             var transaction = await transactionRepository.GetByIdAsync(request.Id, request.UserId);
+
             if (transaction is null)
                 return new Response<TransactionDto?>(null, 404, "Transação não encontrada");
 
             var category = await categoryRepository.GetByIdAsync(transaction.CategoryId, transaction.UserId);
+
             if (category is null)
                 return new Response<TransactionDto?>(null, 404, "Categoria vinculada não encontrada");
 
-            var dto = MapToDto(transaction, category);
-            return new Response<TransactionDto?>(dto);
+            var dto = MapToDto(transaction, category ?? new Category { Title = "Sem Categoria" });
+
+            await cacheService.SetAsync(cacheKey, dto, TimeSpan.FromMinutes(10));
+            return new Response<TransactionDto?>(dto, 200, "Transação recuperada com sucesso");
         }
         catch
         {
@@ -139,16 +157,19 @@ public class TransactionHandler(
                 request.PageNumber,
                 request.PageSize
             );
+
             if (allTransactions == null)
                 return new PagedResponse<List<TransactionDto>?>(message: "Não foi possível obter as transações", code: 500);
 
             var dtos = new List<TransactionDto>();
+
             foreach (var t in allTransactions)
             {
                 var category = await categoryRepository.GetByIdAsync(t.CategoryId, t.UserId);
-                if (category is null) continue;
+                if (category is null) 
+                    continue;
 
-                dtos.Add(MapToDto(t, category));
+                dtos.Add(MapToDto(t, category ?? new Category { Title = "Desconhecida" }));
             }
 
             return new PagedResponse<List<TransactionDto>?>(dtos, allTransactions.Count, request.PageNumber, request.PageSize);
