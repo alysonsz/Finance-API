@@ -132,7 +132,7 @@ public class TransactionHandler(
             if (category is null)
                 return new Response<TransactionDto?>(null, 404, "Categoria vinculada não encontrada");
 
-            var dto = MapToDto(transaction, category ?? new Category { Title = "Sem Categoria" });
+            var dto = MapToDto(transaction, category);
 
             await cacheService.SetAsync(cacheKey, dto, TimeSpan.FromMinutes(10));
             return new Response<TransactionDto?>(dto, 200, "Transação recuperada com sucesso");
@@ -169,7 +169,7 @@ public class TransactionHandler(
                 if (category is null) 
                     continue;
 
-                dtos.Add(MapToDto(t, category ?? new Category { Title = "Desconhecida" }));
+                dtos.Add(MapToDto(t, category));
             }
 
             return new PagedResponse<List<TransactionDto>?>(dtos, allTransactions.Count, request.PageNumber, request.PageSize);
