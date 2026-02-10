@@ -1,4 +1,5 @@
-﻿using Finance.Contracts.Interfaces.Repositories;
+﻿using Finance.Application.Mappers;
+using Finance.Contracts.Interfaces.Repositories;
 using Finance.Contracts.Responses;
 using Finance.Domain.Enums;
 using Finance.Domain.Models;
@@ -34,7 +35,7 @@ public class UpdateTransactionHandler(ITransactionRepository transactionReposito
 
             await transactionRepository.UpdateAsync(transaction);
 
-            var dto = MapToDto(transaction, category);
+            var dto = TransactionMapper.ToDto(transaction, category);
             return new Response<TransactionDto?>(dto, 200, "Transação atualizada com sucesso!");
         }
         catch
@@ -42,21 +43,4 @@ public class UpdateTransactionHandler(ITransactionRepository transactionReposito
             return new Response<TransactionDto?>(null, 500, "Não foi possível atualizar a transação.");
         }
     }
-
-    private static TransactionDto MapToDto(Transaction transaction, Category category)
-        => new()
-        {
-            Id = transaction.Id,
-            Title = transaction.Title,
-            Amount = transaction.Amount,
-            Type = transaction.Type,
-            PaidOrReceivedAt = transaction.PaidOrReceivedAt,
-            CreatedAt = transaction.CreatedAt,
-            Category = new CategoryDto
-            {
-                Id = category.Id,
-                Title = category.Title,
-                Description = category.Description
-            }
-        };
 }
