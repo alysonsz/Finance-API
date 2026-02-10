@@ -1,7 +1,10 @@
-﻿using Finance.Application.Handlers;
+﻿using Finance.Application.Features.Categories.Create;
+using Finance.Application.Features.Categories.Delete;
+using Finance.Application.Features.Categories.GetAll;
+using Finance.Application.Features.Categories.GetById;
+using Finance.Application.Features.Categories.Update;
 using Finance.Contracts.Interfaces.Repositories;
-using Finance.Contracts.Interfaces.Services;
-using Finance.Contracts.Requests.Categories;
+using Finance.Domain.Models;
 using FluentAssertions;
 using Moq;
 
@@ -9,198 +12,171 @@ namespace Finance.Application.Tests.Handlers;
 
 public class CategoryHandlerTests
 {
-    private readonly Mock<ICategoryRepository> _mockRepo;
-    private readonly Mock<ICacheService> _cacheMock;
-    private readonly CategoryHandler _handler;
-
-    public CategoryHandlerTests()
-    {
-        _mockRepo = new Mock<ICategoryRepository>();
-        _cacheMock = new Mock<ICacheService>();
-        _handler = new CategoryHandler(_mockRepo.Object, _cacheMock.Object);
-    }
+    private readonly Mock<ICategoryRepository> _repoMock = new();
 
     [Fact]
-    public async Task CreateAsync_Should_ReturnData_When_Successful()
+    public async Task Create_Should_Return201_When_Successful()
     {
-        var request = new CreateCategoryRequest { Title = "Educação", Description = "Cursos", UserId = 123 };
+        var handler = new CreateCategoryHandler(_repoMock.Object);
 
-        _mockRepo.Setup(r => r.CreateAsync(It.IsAny<Domain.Models.Category>()))
-            .ReturnsAsync((Domain.Models.Category cat) => cat);
+        var command = new CreateCategoryCommand
+        {
+            UserId = 123,
+            Title = "Educação",
+            Description = "Cursos"
+        };
 
-        var result = await _handler.CreateAsync(request);
+        _repoMock.Setup(r => r.CreateAsync(It.IsAny<Category>()))
+            .ReturnsAsync((Category c) => c);
+
+        var result = await handler.Handle(command, CancellationToken.None);
 
         result.Data.Should().NotBeNull();
-        result.Data?.Title.Should().Be(request.Title);
-        _mockRepo.Verify(r => r.CreateAsync(It.Is<Domain.Models.Category>(c => c.Title == request.Title)), Times.Once);
+        result._code.Should().Be(201);
+        result.Message.Should().Be("Categoria criada com sucesso!");
+        result.Data!.Title.Should().Be(command.Title);
+
+        _repoMock.Verify(r => r.CreateAsync(It.Is<Category>(c =>
+            c.UserId == command.UserId &&
+            c.Title == command.Title &&
+            c.Description == command.Description)), Times.Once);
     }
 
     [Fact]
-    public async Task CreateAsync_Should_ReturnNullData_When_RepositoryThrowsException()
+    public async Task Create_Should_Return500_When_RepositoryThrows()
     {
-        var request = new CreateCategoryRequest { Title = "Educação", Description = "Cursos", UserId = 123 };
+        var handler = new CreateCategoryHandler(_repoMock.Object);
 
-        _mockRepo.Setup(r => r.CreateAsync(It.IsAny<Domain.Models.Category>()))
+        var command = new CreateCategoryCommand { UserId = 123, Title = "Educação" };
+
+        _repoMock.Setup(r => r.CreateAsync(It.IsAny<Category>()))
             .ThrowsAsync(new Exception("Erro simulado"));
 
-        var result = await _handler.CreateAsync(request);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         result.Data.Should().BeNull();
+        result._code.Should().Be(500);
+        result.Message.Should().Be("Não foi possível criar a categoria");
     }
 
     [Fact]
-    public async Task GetAllAsync_Should_ReturnPagedData_When_Successful()
+    public async Task Update_Should_Return200_When_Found()
     {
-        var request = new GetAllCategoriesRequest { UserId = 123, PageNumber = 1, PageSize = 2 };
-        var categoriesFromDb = new List<Domain.Models.Category>
-        {
-            new() { Id = 1, Title = "Casa", UserId = 123 },
-            new() { Id = 2, Title = "Saúde", UserId = 123 },
-            new() { Id = 3, Title = "Transporte", UserId = 123 }
-        };
+        var handler = new UpdateCategoryHandler(_repoMock.Object);
 
-        _mockRepo.Setup(r => r.GetAllAsync(request.UserId)).ReturnsAsync(categoriesFromDb);
-
-        var result = await _handler.GetAllAsync(request);
-
-        result.Data.Should().NotBeNull();
-        result.Data.Count.Should().Be(request.PageSize);
-        result.TotalCount.Should().Be(categoriesFromDb.Count);
-    }
-
-    [Fact]
-    public async Task GetAllAsync_Should_ReturnNullData_When_RepositoryThrowsException()
-    {
-        var request = new GetAllCategoriesRequest { UserId = 123 };
-        _mockRepo.Setup(r => r.GetAllAsync(request.UserId)).ThrowsAsync(new Exception("Erro simulado"));
-
-        var result = await _handler.GetAllAsync(request);
-
-        result.Data.Should().BeNull();
-        result.TotalCount.Should().Be(0);
-    }
-
-    [Fact]
-    public async Task UpdateAsync_Should_ReturnSuccess_When_CategoryIsFoundAndUpdated()
-    {
-        var request = new UpdateCategoryRequest
+        var command = new UpdateCategoryCommand
         {
             Id = 1,
+            UserId = 123,
             Title = "Casa (Editado)",
-            Description = "Contas de casa (Editado)",
-            UserId = 123
+            Description = "Contas"
         };
 
-        var existingCategory = new Domain.Models.Category
-        {
-            Id = 1,
-            Title = "Casa",
-            Description = "Contas de casa",
-            UserId = 123
-        };
+        var existing = new Category { Id = 1, UserId = 123, Title = "Casa", Description = "Antigo" };
 
-        _mockRepo.Setup(r => r.GetByIdAsync(request.Id, request.UserId))
-            .ReturnsAsync(existingCategory);
+        _repoMock.Setup(r => r.GetByIdAsync(command.Id, command.UserId))
+            .ReturnsAsync(existing);
 
-        _mockRepo.Setup(r => r.UpdateAsync(It.IsAny<Domain.Models.Category>()))
-            .ReturnsAsync((Domain.Models.Category cat) => cat);
+        _repoMock.Setup(r => r.UpdateAsync(It.IsAny<Category>()))
+            .ReturnsAsync((Category c) => c);
 
-        var result = await _handler.UpdateAsync(request);
+        var result = await handler.Handle(command, CancellationToken.None);
 
+        result._code.Should().Be(200);
+        result.Message.Should().Be("Categoria atualizada com sucesso");
         result.Data.Should().NotBeNull();
-        result.Data?.Title.Should().Be(request.Title);
-        result.Data?.Description.Should().Be(request.Description);
+        result.Data!.Title.Should().Be(command.Title);
+        result.Data.Description.Should().Be(command.Description);
 
-        _mockRepo.Verify(r => r.GetByIdAsync(request.Id, request.UserId), Times.Once);
-        _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<Domain.Models.Category>()), Times.Once);
+        _repoMock.Verify(r => r.UpdateAsync(It.Is<Category>(c =>
+            c.Id == command.Id &&
+            c.UserId == command.UserId &&
+            c.Title == command.Title &&
+            c.Description == command.Description)), Times.Once);
     }
 
     [Fact]
-    public async Task UpdateAsync_Should_ReturnNotFound_When_CategoryDoesNotExist()
+    public async Task Update_Should_Return404_When_NotFound()
     {
-        var request = new UpdateCategoryRequest
-        {
-            Id = 99,
-            Title = "Inexistente",
-            Description = "Testando",
-            UserId = 123
-        };
+        var handler = new UpdateCategoryHandler(_repoMock.Object);
 
-        _mockRepo.Setup(r => r.GetByIdAsync(request.Id, request.UserId))
-            .ReturnsAsync((Domain.Models.Category?)null);
+        var command = new UpdateCategoryCommand { Id = 99, UserId = 123, Title = "X" };
 
-        var result = await _handler.UpdateAsync(request);
+        _repoMock.Setup(r => r.GetByIdAsync(command.Id, command.UserId))
+            .ReturnsAsync((Category?)null);
+
+        var result = await handler.Handle(command, CancellationToken.None);
 
         result.Data.Should().BeNull();
-        result.Message.Should().Be("Categoria não encontrada");
-
-        _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<Domain.Models.Category>()), Times.Never);
+        result._code.Should().Be(404);
+        result.Message.Should().Be("Categoria não encontrada ou não pertence ao usuário.");
+        _repoMock.Verify(r => r.UpdateAsync(It.IsAny<Category>()), Times.Never);
     }
 
     [Fact]
-    public async Task DeleteAsync_Should_ReturnSuccess_When_CategoryIsFoundAndDeleted()
+    public async Task Delete_Should_Return200_When_Found()
     {
-        var request = new DeleteCategoryRequest { Id = 1, UserId = 123 };
-        var existingCategory = new Domain.Models.Category { Id = 1, UserId = 123, Title = "A ser deletada" };
+        var handler = new DeleteCategoryHandler(_repoMock.Object);
 
-        _mockRepo.Setup(r => r.GetByIdAsync(request.Id, request.UserId))
-            .ReturnsAsync(existingCategory);
+        var command = new DeleteCategoryCommand { Id = 1, UserId = 123 };
+        var existing = new Category { Id = 1, UserId = 123, Title = "A ser deletada" };
 
-        _mockRepo.Setup(r => r.DeleteAsync(It.IsAny<Domain.Models.Category>()))
-            .ReturnsAsync(existingCategory);
+        _repoMock.Setup(r => r.GetByIdAsync(command.Id, command.UserId))
+            .ReturnsAsync(existing);
 
-        var result = await _handler.DeleteAsync(request);
+        _repoMock.Setup(r => r.DeleteAsync(existing))
+            .ReturnsAsync((Category c) => c);
 
-        result.Data.Should().NotBeNull();
+        var result = await handler.Handle(command, CancellationToken.None);
+
+        result._code.Should().Be(200);
         result.Message.Should().Be("Categoria excluída com sucesso!");
-        _mockRepo.Verify(r => r.GetByIdAsync(request.Id, request.UserId), Times.Once);
-        _mockRepo.Verify(r => r.DeleteAsync(It.IsAny<Domain.Models.Category>()), Times.Once);
+        result.Data.Should().NotBeNull();
+        result.Data!.Id.Should().Be(existing.Id);
+
+        _repoMock.Verify(r => r.DeleteAsync(existing), Times.Once);
     }
 
     [Fact]
-    public async Task DeleteAsync_Should_ReturnNotFound_When_CategoryDoesNotExist()
+    public async Task GetById_Should_Return404_When_NotFound()
     {
+        var handler = new GetCategoryByIdHandler(_repoMock.Object);
 
-        var request = new DeleteCategoryRequest { Id = 99, UserId = 123 };
+        var command = new GetCategoryByIdCommand { Id = 99, UserId = 123 };
 
-        _mockRepo.Setup(r => r.GetByIdAsync(request.Id, request.UserId))
-            .ReturnsAsync((Domain.Models.Category?)null);
+        _repoMock.Setup(r => r.GetByIdAsync(command.Id, command.UserId))
+            .ReturnsAsync((Category?)null);
 
-        var result = await _handler.DeleteAsync(request);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         result.Data.Should().BeNull();
-        result.Message.Should().Be("Categoria não encontrada");
-        _mockRepo.Verify(r => r.DeleteAsync(It.IsAny<Domain.Models.Category>()), Times.Never);
+        result._code.Should().Be(404);
+        result.Message.Should().Be("Categoria não encontrada ou não pertence ao usuário.");
     }
 
     [Fact]
-    public async Task GetByIdAsync_Should_ReturnData_When_CategoryIsFound()
+    public async Task GetAll_Should_ReturnPagedData_When_Successful()
     {
-        var request = new GetCategoryByIdRequest { Id = 1, UserId = 123 };
-        var existingCategory = new Domain.Models.Category { Id = 1, UserId = 123, Title = "Categoria Encontrada" };
+        var handler = new GetAllCategoriesHandler(_repoMock.Object);
 
-        _mockRepo.Setup(r => r.GetByIdAsync(request.Id, request.UserId))
-            .ReturnsAsync(existingCategory);
+        var command = new GetAllCategoriesCommand { UserId = 123, PageNumber = 1, PageSize = 2 };
 
-        var result = await _handler.GetByIdAsync(request);
+        var categories = new List<Category>
+        {
+            new() { Id = 1, UserId = 123, Title = "Casa" },
+            new() { Id = 2, UserId = 123, Title = "Saúde" },
+            new() { Id = 3, UserId = 123, Title = "Transporte" }
+        };
+
+        _repoMock.Setup(r => r.GetAllAsync(command.UserId))
+            .ReturnsAsync(categories);
+
+        var result = await handler.Handle(command, CancellationToken.None);
 
         result.Data.Should().NotBeNull();
-        result.Data?.Id.Should().Be(request.Id);
-        result.Data?.Title.Should().Be(existingCategory.Title);
-        _mockRepo.Verify(r => r.GetByIdAsync(request.Id, request.UserId), Times.Once);
-    }
-
-    [Fact]
-    public async Task GetByIdAsync_Should_ReturnNotFound_When_CategoryDoesNotExist()
-    {
-        var request = new GetCategoryByIdRequest { Id = 99, UserId = 123 };
-
-        _mockRepo.Setup(r => r.GetByIdAsync(request.Id, request.UserId))
-            .ReturnsAsync((Domain.Models.Category?)null);
-
-        var result = await _handler.GetByIdAsync(request);
-
-        result.Data.Should().BeNull();
-        result.Message.Should().Be("Categoria não encontrada");
+        result.Data!.Count.Should().Be(2);
+        result.TotalCount.Should().Be(3);
+        result.CurrentPage.Should().Be(1);
+        result.PageSize.Should().Be(2);
     }
 }

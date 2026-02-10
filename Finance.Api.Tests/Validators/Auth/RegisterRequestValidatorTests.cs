@@ -1,4 +1,4 @@
-﻿using Finance.Api.Validators.Auth;
+﻿using Finance.Application.Features.Auth.Register;
 using Finance.Contracts.Requests.Auth;
 using FluentValidation.TestHelper;
 

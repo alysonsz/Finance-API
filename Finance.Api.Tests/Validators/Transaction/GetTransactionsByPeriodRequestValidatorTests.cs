@@ -1,4 +1,4 @@
-﻿using Finance.Api.Validators.Transaction;
+﻿using Finance.Application.Features.Transactions.GetByPeriod;
 using Finance.Contracts.Requests.Transactions;
 using FluentValidation.TestHelper;
 
@@ -6,7 +6,7 @@ namespace Finance.Api.Tests.Validators.Transaction;
 
 public class GetTransactionsByPeriodRequestValidatorTests
 {
-    private readonly GetTransactionsByPeriodRequestValidator _validator = new();
+    private readonly GetByPeriodTransactionRequestValidator _validator = new();
 
     [Fact]
     public void Should_Succeed_When_Dates_Are_Valid()
@@ -27,11 +27,10 @@ public class GetTransactionsByPeriodRequestValidatorTests
     [Fact]
     public void Should_Fail_When_EndDate_Is_Before_StartDate()
     {
-        // Arrange
         var model = new GetTransactionsByPeriodRequest
         {
             StartDate = new DateTime(2025, 7, 31),
-            EndDate = new DateTime(2025, 7, 1) // Data final anterior à inicial
+            EndDate = new DateTime(2025, 7, 1) 
         };
 
         var result = _validator.TestValidate(model);

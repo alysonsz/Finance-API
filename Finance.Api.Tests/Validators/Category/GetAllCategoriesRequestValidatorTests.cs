@@ -1,4 +1,4 @@
-﻿using Finance.Api.Validators.Category;
+﻿using Finance.Application.Features.Categories.GetAll;
 using Finance.Contracts.Requests.Categories;
 using FluentValidation.TestHelper;
 

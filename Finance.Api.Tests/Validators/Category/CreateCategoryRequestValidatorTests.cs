@@ -1,4 +1,4 @@
-﻿using Finance.Api.Validators.Category;
+﻿using Finance.Application.Features.Categories.Create;
 using Finance.Contracts.Requests.Categories;
 using FluentValidation.TestHelper;
 
@@ -10,7 +10,7 @@ public class CreateCategoryRequestValidatorTests
 
     [Fact]
     public void Should_Succeed_When_Request_Is_Valid()
-    { 
+    {
         var model = new CreateCategoryRequest { Title = "Categoria Válida", Description = "Descrição Válida" };
 
         var result = _validator.TestValidate(model);
@@ -26,12 +26,12 @@ public class CreateCategoryRequestValidatorTests
         var result = _validator.TestValidate(model);
 
         result.ShouldHaveValidationErrorFor(c => c.Title)
-              .WithErrorMessage("O título é obrigatório."); 
+              .WithErrorMessage("O título é obrigatório.");
     }
 
     [Theory]
-    [InlineData("a")]  
-    [InlineData("ab")] 
+    [InlineData("a")]
+    [InlineData("ab")]
     public void Should_Fail_When_Title_Is_Shorter_Than_3_Chars(string invalidTitle)
     {
         var model = new CreateCategoryRequest { Title = invalidTitle, Description = "Descrição Válida" };

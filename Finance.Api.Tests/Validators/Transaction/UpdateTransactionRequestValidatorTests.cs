@@ -1,4 +1,4 @@
-﻿using Finance.Api.Validators.Transaction;
+﻿using Finance.Application.Features.Transactions.Update;
 using Finance.Contracts.Requests.Transactions;
 using Finance.Domain.Enums;
 using FluentValidation.TestHelper;
