@@ -1,12 +1,21 @@
-﻿using Finance.Api.Validators.Category;
-using Finance.Application.Handlers;
-using Finance.Contracts.Interfaces.Handlers;
+﻿using Finance.Api.Validators.Auth;
+using Finance.Application;
+using Finance.Application.Features.Auth.Register;
+using Finance.Application.Features.Categories.Create;
+using Finance.Application.Features.Categories.GetAll;
+using Finance.Application.Features.Categories.Update;
+using Finance.Application.Features.Transactions.Create;
+using Finance.Application.Features.Transactions.GetByPeriod;
+using Finance.Application.Features.Transactions.Update;
+using Finance.Application.Services;
 using Finance.Contracts.Interfaces.Repositories;
 using Finance.Contracts.Interfaces.Services;
 using Finance.Infrastructure.Data;
 using Finance.Infrastructure.Repositories;
 using Finance.Infrastructure.Services;
 using FluentValidation;
+using FluentValidation.AspNetCore;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -32,6 +41,24 @@ public static class BuilderExtension
                     maxRetryDelay: TimeSpan.FromSeconds(10),
                     errorNumbersToAdd: null);
             }));
+    }
+
+    public static WebApplicationBuilder AddApiInfrastructure(this WebApplicationBuilder builder)
+    {
+        builder.AddConfiguration();
+        builder.AddDatabase();
+        builder.AddCache();
+        builder.AddCors();
+        builder.AddDocumentation();
+        builder.AddServices();
+        builder.AddMediatR();
+
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddFluentValidationAutoValidation();
+        builder.Services.AddControllers();
+        builder.Services.AddJwtAuthentication(builder.Configuration);
+
+        return builder;
     }
 
     public static void AddCors(this WebApplicationBuilder builder)
@@ -122,19 +149,33 @@ public static class BuilderExtension
         });
     }
 
+    public static void AddMediatR(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddMediatR(typeof(AssemblyReference).Assembly);
+    }
+
     public static void AddServices(this WebApplicationBuilder builder)
     {
-        builder.Services.AddTransient<ICategoryRepository, CategoryRepository>();
-        builder.Services.AddTransient<ITransactionRepository, TransactionRepository>();
-        builder.Services.AddTransient<IUserRepository, UserRepository>();
+        builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+        builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+        builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-        builder.Services.AddTransient<ICategoryHandler, CategoryHandler>();
-        builder.Services.AddTransient<ITransactionHandler, TransactionHandler>();
-        builder.Services.AddTransient<IUserHandler, UserHandler>();
+        builder.Services.AddScoped<ICategoryService, CategoryService>();
+        builder.Services.AddScoped<ITransactionService, TransactionService>();
+        builder.Services.AddScoped<IUserService, UserService>();
 
-        builder.Services.AddTransient<ITokenService, TokenService>();
-        builder.Services.AddTransient<ICacheService, CacheService>();
+        builder.Services.AddScoped<ITokenService, TokenService>();
+        builder.Services.AddScoped<ICacheService, CacheService>();
 
         builder.Services.AddValidatorsFromAssemblyContaining<CreateCategoryRequestValidator>();
+        builder.Services.AddValidatorsFromAssemblyContaining<UpdateCategoryRequestValidator>();
+        builder.Services.AddValidatorsFromAssemblyContaining<GetAllCategoriesRequestValidator>();
+
+        builder.Services.AddValidatorsFromAssemblyContaining<CreateTransactionRequestValidator>();
+        builder.Services.AddValidatorsFromAssemblyContaining<UpdateTransactionRequestValidator>();
+        builder.Services.AddValidatorsFromAssemblyContaining<GetByPeriodTransactionRequestValidator>();
+
+        builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
+        builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
     }
 }

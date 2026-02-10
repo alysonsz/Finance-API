@@ -1,8 +1,4 @@
-using Finance.Api;
 using Finance.Api.Extensions;
-using FluentValidation.AspNetCore;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -11,7 +7,7 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-    Log.Information("Iniciando a aplicação Finance API...");
+    Log.Information("Starting Finance API...");
 
     var builder = WebApplication.CreateBuilder(args);
 
@@ -20,62 +16,18 @@ try
         .ReadFrom.Services(services)
         .Enrich.FromLogContext());
 
-    builder.AddConfiguration();
-    builder.AddDatabase();
-    builder.AddCache();
-    builder.AddCors();
-    builder.AddDocumentation();
-    builder.AddServices();
-
-    builder.Services.AddMediatR(typeof(Finance.Application.AssemblyReference).Assembly);
-    builder.Services.AddHttpContextAccessor();
-    builder.Services.AddFluentValidationAutoValidation();
-    builder.Services.AddControllers();
-    builder.Services.AddJwtAuthentication(builder.Configuration);
+    builder.AddApiInfrastructure();
 
     var app = builder.Build();
 
-    app.UseSerilogRequestLogging();
-
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
-
-    app.UseCors(ApiConfiguration.CorsPolicyName);
-
-    app.UseAuthentication();
-    app.UseAuthorization();
-
-    app.MapControllers();
-
-    using (var scope = app.Services.CreateScope())
-    {
-        var services = scope.ServiceProvider;
-        try
-        {
-            var context = services.GetRequiredService<Finance.Infrastructure.Data.FinanceDbContext>();
-
-            if (context.Database.IsRelational() && (context.Database.GetPendingMigrations().Any()))
-            {
-                Log.Information("Aplicando Migrations no Banco de Dados...");
-                context.Database.Migrate();
-                Log.Information("Banco de Dados atualizado com sucesso!");
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Ocorreu um erro ao aplicar as Migrations.");
-            throw;
-        }
-    }
+    app.UseApiPipeline();
+    await app.ApplyDatabaseMigrationsAsync();
 
     app.Run();
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "A aplicação encerrou inesperadamente durante a inicialização (Startup Failure).");
+    Log.Fatal(ex, "Application terminated unexpectedly during startup.");
 }
 finally
 {
