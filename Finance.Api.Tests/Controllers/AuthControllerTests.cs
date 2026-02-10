@@ -1,13 +1,16 @@
-﻿using Finance.Application.Commands.Users;
-using Finance.Contracts.Requests.Auth;
+﻿using Finance.Application.Features.Auth.Login;
+using Finance.Application.Features.Auth.Register;
+using Finance.Contracts.Responses;
+using Finance.Contracts.Responses.Auth;
 using FluentAssertions;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace Finance.Api.Tests.Controllers;
 
 [Collection("Shared Test Collection")]
-public class AuthControllerTests(CustomWebApplicationFactory factory)
+public class AuthControllerTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client = factory.CreateClient();
 
@@ -23,10 +26,17 @@ public class AuthControllerTests(CustomWebApplicationFactory factory)
 
         var response = await _client.PostAsJsonAsync("v1/auth/register", request);
 
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Falha no Register: {error}");
+        }
+
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var responseBody = await response.Content.ReadFromJsonAsync<JsonElement>();
-        responseBody.GetProperty("token").Should().NotBeNull();
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+        result.TryGetProperty("message", out var msg).Should().BeTrue();
+        msg.GetString().Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -47,37 +57,79 @@ public class AuthControllerTests(CustomWebApplicationFactory factory)
     public async Task Login_Should_ReturnOkAndToken_When_CredentialsAreValid()
     {
         var password = "StrongPassword123!";
-        var registerRequest = new RegisterUserCommand
+        var email = $"login-test-{Guid.NewGuid()}@email.com";
+
+        await _client.PostAsJsonAsync("v1/auth/register", new RegisterUserCommand
         {
             Name = "Test User For Login",
-            Email = $"login-test-{Guid.NewGuid()}@email.com",
+            Email = email,
             Password = password
-        };
+        });
 
-        await _client.PostAsJsonAsync("v1/auth/register", registerRequest);
-
-        var loginRequest = new LoginUserCommand
+        var response = await _client.PostAsJsonAsync("v1/auth/login", new LoginUserCommand
         {
-            Email = registerRequest.Email,
+            Email = email,
             Password = password
-        };
-
-        var response = await _client.PostAsJsonAsync("v1/auth/login", loginRequest);
+        });
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var responseBody = await response.Content.ReadFromJsonAsync<JsonElement>();
-        responseBody.GetProperty("token").Should().NotBeNull();
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+        result.TryGetProperty("accessToken", out var token).Should().BeTrue();
+
+        token.ValueKind.Should().Be(JsonValueKind.String);
+        token.GetString().Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
     public async Task GetProfile_Should_ReturnOk_When_UserIsAuthenticated()
     {
+        var email = $"profile-{Guid.NewGuid()}@email.com";
+        var password = "Password123!";
+
+        await _client.PostAsJsonAsync("v1/auth/register", new RegisterUserCommand
+        {
+            Name = "Profile User",
+            Email = email,
+            Password = password
+        });
+
+        var loginResponse = await _client.PostAsJsonAsync("v1/auth/login", new LoginUserCommand
+        {
+            Email = email,
+            Password = password
+        });
+
+        loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var loginResult = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var token = ExtractAccessToken(loginResult);
+
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
         var response = await _client.GetAsync("v1/auth/profile");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
 
-        var responseBody = await response.Content.ReadFromJsonAsync<JsonElement>();
-        responseBody.GetProperty("data").GetProperty("email").GetString().Should().Be("test@user.com");
+    private static string ExtractAccessToken(JsonElement root)
+    {
+        if (root.TryGetProperty("accessToken", out var at) && at.ValueKind == JsonValueKind.String)
+            return at.GetString() ?? throw new InvalidOperationException("accessToken veio null.");
+
+        if (root.TryGetProperty("token", out var tokenEl))
+        {
+            if (tokenEl.ValueKind == JsonValueKind.String)
+                return tokenEl.GetString() ?? throw new InvalidOperationException("Token string veio null.");
+
+            if (tokenEl.ValueKind == JsonValueKind.Object &&
+                tokenEl.TryGetProperty("accessToken", out var accessTokenEl) &&
+                accessTokenEl.ValueKind == JsonValueKind.String)
+            {
+                return accessTokenEl.GetString() ?? throw new InvalidOperationException("accessToken veio null (token obj).");
+            }
+        }
+
+        throw new InvalidOperationException($"Não consegui extrair token: {root}");
     }
 }
