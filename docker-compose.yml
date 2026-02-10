@@ -1,7 +1,7 @@
 services:
   finance-api:
     container_name: finance-api
-    image: alysonsz/finance-api:v1.0.0
+    image: alysonsz/finance-api:v1.1.0
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=finance-db;Database=FinanceDb;User Id=sa;Password=MyStrongPassword123!;TrustServerCertificate=True;
