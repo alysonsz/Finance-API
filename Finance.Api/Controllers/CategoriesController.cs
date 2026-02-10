@@ -1,8 +1,6 @@
-﻿using Finance.Application.Commands.Categories;
-using Finance.Application.Extensions;
-using Finance.Contracts.Interfaces.Handlers;
+﻿using Finance.Application.Extensions;
+using Finance.Contracts.Interfaces.Services;
 using Finance.Contracts.Requests.Categories;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,14 +9,14 @@ namespace Finance.Api.Controllers;
 [Authorize]
 [ApiController]
 [Route("v1/categories")]
-public class CategoriesController(IMediator mediator) : ControllerBase
+public class CategoriesController(ICategoryService service) : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> CreateAsync(CreateCategoryCommand request)
+    public async Task<IActionResult> CreateAsync([FromBody] CreateCategoryRequest request)
     {
         request.UserId = User.GetUserId();
 
-        var response = await mediator.Send(request);
+        var response = await service.CreateAsync(request);
 
         return response.IsSuccess
             ? Created($"v1/categories/{response.Data?.Id}", response.Data)
@@ -28,15 +26,10 @@ public class CategoriesController(IMediator mediator) : ControllerBase
     [HttpPut("{id:long}")]
     public async Task<IActionResult> UpdateAsync([FromRoute] long id, [FromBody] UpdateCategoryRequest request)
     {
-        var command = new UpdateCategoryCommand
-        {
-            Id = id,
-            Title = request.Title,
-            Description = request.Description,
-            UserId = User.GetUserId()
-        };
+        request.Id = id;
+        request.UserId = User.GetUserId();
 
-        var response = await mediator.Send(command);
+        var response = await service.UpdateAsync(request);
 
         return response.IsSuccess
             ? Ok(response.Data)
@@ -46,13 +39,13 @@ public class CategoriesController(IMediator mediator) : ControllerBase
     [HttpDelete("{id:long}")]
     public async Task<IActionResult> DeleteAsync([FromRoute] long id)
     {
-        var command = new DeleteCategoryCommand
+        var request = new DeleteCategoryRequest
         {
             Id = id,
             UserId = User.GetUserId()
         };
 
-        var response = await mediator.Send(command);
+        var response = await service.DeleteAsync(request);
 
         return response.IsSuccess
             ? Ok(response.Data)
@@ -62,13 +55,13 @@ public class CategoriesController(IMediator mediator) : ControllerBase
     [HttpGet("{id:long}")]
     public async Task<IActionResult> GetByIdAsync([FromRoute] long id)
     {
-        var command = new GetCategoryByIdCommand
+        var request = new GetCategoryByIdRequest
         {
             Id = id,
             UserId = User.GetUserId()
         };
 
-        var response = await mediator.Send(command);
+        var response = await service.GetByIdAsync(request);
 
         return response.IsSuccess
             ? Ok(response.Data)
@@ -78,14 +71,14 @@ public class CategoriesController(IMediator mediator) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 25)
     {
-        var command = new GetAllCategoriesCommand
+        var request = new GetAllCategoriesRequest
         {
             UserId = User.GetUserId(),
             PageNumber = pageNumber,
             PageSize = pageSize
         };
 
-        var response = await mediator.Send(command);
+        var response = await service.GetAllAsync(request);
 
         return response.IsSuccess
             ? Ok(response.Data)

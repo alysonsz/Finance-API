@@ -1,8 +1,6 @@
-﻿using Finance.Application.Commands.Transactions;
-using Finance.Application.Extensions;
-using Finance.Contracts.Interfaces.Handlers;
+﻿using Finance.Application.Extensions;
+using Finance.Contracts.Interfaces.Services;
 using Finance.Contracts.Requests.Transactions;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,14 +9,14 @@ namespace Finance.Api.Controllers;
 [Authorize]
 [ApiController]
 [Route("v1/transactions")]
-public class TransactionsController(IMediator mediator, ITransactionHandler handler) : ControllerBase
+public class TransactionsController(ITransactionService service) : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> CreateAsync(CreateTransactionCommand command)
+    public async Task<IActionResult> CreateAsync([FromBody] CreateTransactionRequest request)
     {
-        command.UserId = User.GetUserId();
+        request.UserId = User.GetUserId();
 
-        var response = await mediator.Send(command);
+        var response = await service.CreateAsync(request);
 
         return response.IsSuccess
             ? Created($"v1/transactions/{response.Data?.Id}", response.Data)
@@ -26,12 +24,12 @@ public class TransactionsController(IMediator mediator, ITransactionHandler hand
     }
 
     [HttpPut("{id:long}")]
-    public async Task<IActionResult> UpdateAsync([FromBody] UpdateTransactionCommand command, [FromRoute] long id)
+    public async Task<IActionResult> UpdateAsync([FromRoute] long id, [FromBody] UpdateTransactionRequest request)
     {
-        command.Id = id;
-        command.UserId = User.GetUserId();
+        request.Id = id;
+        request.UserId = User.GetUserId();
 
-        var response = await mediator.Send(command);
+        var response = await service.UpdateAsync(request);
 
         return response.IsSuccess
             ? Ok(response.Data)
@@ -41,13 +39,13 @@ public class TransactionsController(IMediator mediator, ITransactionHandler hand
     [HttpDelete("{id:long}")]
     public async Task<IActionResult> DeleteAsync([FromRoute] long id)
     {
-        var command = new DeleteTransactionCommand
+        var request = new DeleteTransactionRequest
         {
             Id = id,
             UserId = User.GetUserId()
         };
 
-        var response = await mediator.Send(command);
+        var response = await service.DeleteAsync(request);
 
         return response.IsSuccess
             ? Ok(response.Data)
@@ -57,13 +55,13 @@ public class TransactionsController(IMediator mediator, ITransactionHandler hand
     [HttpGet("{id:long}")]
     public async Task<IActionResult> GetByIdAsync([FromRoute] long id)
     {
-        var command = new GetTransactionByIdRequest
+        var request = new GetTransactionByIdRequest
         {
             Id = id,
             UserId = User.GetUserId()
         };
 
-        var response = await handler.GetByIdAsync(command);
+        var response = await service.GetByIdAsync(request);
 
         return response.IsSuccess
             ? Ok(response.Data)
@@ -71,10 +69,13 @@ public class TransactionsController(IMediator mediator, ITransactionHandler hand
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetByPeriodAsync([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null,
-        [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 25)
+    public async Task<IActionResult> GetByPeriodAsync(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 25)
     {
-        var query = new GetTransactionsByPeriodCommand
+        var request = new GetTransactionsByPeriodRequest
         {
             UserId = User.GetUserId(),
             StartDate = startDate,
@@ -83,7 +84,7 @@ public class TransactionsController(IMediator mediator, ITransactionHandler hand
             PageSize = pageSize
         };
 
-        var response = await mediator.Send(query);
+        var response = await service.GetByPeriodAsync(request);
 
         return response.IsSuccess
             ? Ok(response.Data)
@@ -93,14 +94,14 @@ public class TransactionsController(IMediator mediator, ITransactionHandler hand
     [HttpGet("report")]
     public async Task<IActionResult> GetReportAsync([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
     {
-        var query = new GetTransactionReportCommand
+        var request = new GetTransactionReportRequest
         {
             UserId = User.GetUserId(),
             StartDate = startDate,
             EndDate = endDate
         };
 
-        var response = await mediator.Send(query);
+        var response = await service.GetReportAsync(request);
 
         return response.IsSuccess
             ? Ok(response.Data)
