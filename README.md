@@ -1,10 +1,12 @@
 # 💰 Finance API — Gestão Financeira Enterprise
 
-![.NET 8](https://img.shields.io/badge/.NET%208-512BD4?style=for-the-badge\&logo=dotnet\&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge\&logo=docker\&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge\&logo=redis\&logoColor=white)
-![Serilog + Seq](https://img.shields.io/badge/Serilog-Seq-00CCB3?style=for-the-badge\&logo=files\&logoColor=white)
-![SQL Server](https://img.shields.io/badge/SQL%20Server-CC2927?style=for-the-badge\&logo=microsoft-sql-server\&logoColor=white)
+![.NET 8](https://img.shields.io/badge/.NET%208-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+![C#](https://img.shields.io/badge/C%23-%23239120.svg?style=for-the-badge&logo=c-sharp&logoColor=white)
+![CQRS](https://img.shields.io/badge/CQRS-MediatR-FF5722?style=for-the-badge&logo=nuget&logoColor=white)
+![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Serilog](https://img.shields.io/badge/Serilog-1cb495?style=for-the-badge&logo=serilog&logoColor=white)
+![MicrosoftSQLServer](https://img.shields.io/badge/SQL%20Server-CC2927?style=for-the-badge&logo=microsoft%20sql%20server&logoColor=white)
 
 A **Finance API** é uma solução de back-end **robusta, segura e de alta performance** para controle e gestão de transações financeiras. Desenvolvida em **.NET 8**, aplica rigorosamente os princípios da **Clean Architecture**, garantindo baixo acoplamento, alta testabilidade e escalabilidade.
 
