@@ -5,36 +5,34 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Finance.Infrastructure.Repositories;
 
-public class CategoryRepository(FinanceDbContext context) : ICategoryRepository
+public class CategoryRepository(FinanceReadDbContext readContext, FinanceWriteDbContext writeContext)
+    : BaseRepository<Category>(writeContext), ICategoryRepository
 {
     public async Task<Category?> CreateAsync(Category category)
     {
-        await context.Categories.AddAsync(category);
-        await context.SaveChangesAsync();
+        await CreateWithOutboxAsync(category);
         return category;
     }
 
     public async Task<Category?> UpdateAsync(Category category)
     {
-        context.Categories.Update(category);
-        await context.SaveChangesAsync();
+        await UpdateWithOutboxAsync(category);
         return category;
     }
 
     public async Task<Category?> DeleteAsync(Category category)
     {
-        context.Categories.Remove(category);
-        await context.SaveChangesAsync();
+        await DeleteWithOutboxAsync(category);
         return category;
     }
 
     public async Task<Category?> GetByIdAsync(long id, long userId)
-        => await context.Categories
+        => await readContext.Categories
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
 
     public async Task<List<Category>?> GetAllAsync(long userId)
-        => await context.Categories
+        => await readContext.Categories
             .AsNoTracking()
             .Where(c => c.UserId == userId)
             .OrderBy(c => c.Title)

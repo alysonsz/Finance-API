@@ -5,38 +5,36 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Finance.Infrastructure.Repositories;
 
-public class TransactionRepository(FinanceDbContext context) : ITransactionRepository
+public class TransactionRepository(FinanceReadDbContext readContext, FinanceWriteDbContext writeContext)
+    : BaseRepository<Transaction>(writeContext), ITransactionRepository
 {
     public async Task<Transaction?> CreateAsync(Transaction transaction)
     {
-        await context.Transactions.AddAsync(transaction);
-        await context.SaveChangesAsync();
+        await CreateWithOutboxAsync(transaction);
         return transaction;
     }
 
     public async Task<Transaction?> UpdateAsync(Transaction transaction)
     {
-        context.Transactions.Update(transaction);
-        await context.SaveChangesAsync();
+        await UpdateWithOutboxAsync(transaction);
         return transaction;
     }
 
     public async Task<Transaction?> DeleteAsync(Transaction transaction)
     {
-        context.Transactions.Remove(transaction);
-        await context.SaveChangesAsync();
+        await DeleteWithOutboxAsync(transaction);
         return transaction;
     }
 
     public async Task<Transaction?> GetByIdAsync(long id, long userId)
-        => await context.Transactions
+        => await readContext.Transactions
             .AsNoTracking()
             .Include(c => c.Category)
             .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
 
     public async Task<List<Transaction>> GetByPeriodAsync(long userId, DateTime? startDate, DateTime? endDate, int pageNumber, int pageSize)
     {
-        return await context.Transactions
+        return await readContext.Transactions
             .AsNoTracking()
             .Include(c => c.Category)
             .Where(t => t.UserId == userId &&
@@ -50,7 +48,7 @@ public class TransactionRepository(FinanceDbContext context) : ITransactionRepos
 
     public async Task<List<Transaction>> GetAllByPeriodAsync(long userId, DateTime? startDate, DateTime? endDate)
     {
-        return await context.Transactions
+        return await readContext.Transactions
             .AsNoTracking()
             .Include(t => t.Category)
             .Where(t => t.UserId == userId &&
@@ -62,7 +60,7 @@ public class TransactionRepository(FinanceDbContext context) : ITransactionRepos
 
     public async Task<int> CountByPeriodAsync(long userId, DateTime? startDate, DateTime? endDate)
     {
-        return await context.Transactions
+        return await readContext.Transactions
             .AsNoTracking()
             .Where(t => t.UserId == userId &&
                         (startDate == null || t.PaidOrReceivedAt >= startDate) &&
