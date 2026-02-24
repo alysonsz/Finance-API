@@ -11,6 +11,8 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
+    AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
     builder.Host.UseSerilog((context, services, configuration) => configuration
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
@@ -28,6 +30,7 @@ try
 catch (Exception ex)
 {
     Log.Fatal(ex, "Application terminated unexpectedly during startup.");
+    throw;
 }
 finally
 {

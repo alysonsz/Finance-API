@@ -1,18 +1,21 @@
 services:
   finance-api:
     container_name: finance-api
-    image: alysonsz/finance-api:v1.1.0
+    image: alysonsz/finance-api:v2.0.0
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=finance-db;Database=FinanceDb;User Id=sa;Password=MyStrongPassword123!;TrustServerCertificate=True;
+      - ConnectionStrings__WriteDatabase=Server=finance-sqlserver-db;Database=FinanceDb;User Id=sa;Password=MyStrongPassword123!;TrustServerCertificate=True;Connect Timeout=30;
+      - ConnectionStrings__ReadDatabase=Host=finance-postgre-db;Port=5432;Database=FinanceReadDb;Username=postgres;Password=MyStrongPassword123!;
       - Serilog__WriteTo__0__Args__serverUrl=http://finance-seq:5341
       - ASPNETCORE_DataProtection__KeyManagement__XmlRepository__Directory=/root/.aspnet/DataProtection-Keys
       - ConnectionStrings__Redis=finance-redis:6379
     ports:
       - "5000:8080"
     depends_on:
-      finance-db:
+      finance-sqlserver:
         condition: service_healthy
+      finance-postgre:
+        condition: service_started
       finance-redis:
         condition: service_started
     volumes:
@@ -20,9 +23,9 @@ services:
     networks:
       finance-network:
 
-  finance-db:
+  finance-sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: finance-db
+    container_name: finance-sqlserver-db
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=MyStrongPassword123!
@@ -38,6 +41,18 @@ services:
       start_period: 60s
     networks:
       finance-network:
+    
+  finance-postgre:
+    image: postgres:alpine
+    container_name: finance-postgre-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=MyStrongPassword123!
+      - POSTGRES_DB=FinanceReadDb
+    ports:
+      - "5432:5432"
+    networks:
+      - finance-network
 
   finance-seq:
     image: datalust/seq:latest

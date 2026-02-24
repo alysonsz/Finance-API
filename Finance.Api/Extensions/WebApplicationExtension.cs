@@ -1,5 +1,7 @@
 ﻿using Finance.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Serilog;
 
 namespace Finance.Api.Extensions;
@@ -31,21 +33,41 @@ public static class WebApplicationExtensions
         using var scope = app.Services.CreateScope();
         var services = scope.ServiceProvider;
 
-        try
+        for (int i = 1; i <= 6; i++)
         {
-            var context = services.GetRequiredService<FinanceDbContext>();
-
-            if (context.Database.IsRelational() && context.Database.GetPendingMigrations().Any())
+            try
             {
-                Log.Information("Applying pending migrations...");
-                await context.Database.MigrateAsync();
-                Log.Information("Database updated successfully.");
+                var writeDb = services.GetRequiredService<FinanceWriteDbContext>();
+                var databaseCreator = writeDb.GetService<IRelationalDatabaseCreator>();
+
+                if (!await databaseCreator.ExistsAsync())
+                {
+                    Log.Information("Database does not exist. Creating...");
+                    await databaseCreator.CreateAsync();
+                }
+
+                await writeDb.Database.MigrateAsync();
+
+                var readDb = services.GetRequiredService<FinanceReadDbContext>();
+                var readCreator = readDb.GetService<IRelationalDatabaseCreator>();
+
+                if (!await readCreator.ExistsAsync())
+                {
+                    Log.Information("READ Database (Postgres) does not exist. Creating...");
+                    await readCreator.CreateAsync();
+                }
+
+                await readDb.Database.MigrateAsync();
+
+                Log.Information("Migrations applied successfully!");
+                return;
             }
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Error while applying database migrations.");
-            throw;
+            catch (Exception ex)
+            {
+                if (i == 6) Log.Fatal(ex, "Final attempt failed.");
+                Log.Warning("Attempt {i}: Database not ready. Retrying in 5s...", i);
+                await Task.Delay(5000);
+            }
         }
     }
 }
