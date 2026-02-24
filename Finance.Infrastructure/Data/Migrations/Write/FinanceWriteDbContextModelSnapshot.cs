@@ -4,23 +4,20 @@ using Finance.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Finance.Infrastructure.Migrations
+namespace Finance.Infrastructure.Data.Migrations.Write
 {
-    [DbContext(typeof(FinanceDbContext))]
-    [Migration("20250618195420_InitialCreate")]
-    partial class InitialCreate
+    [DbContext(typeof(FinanceWriteDbContext))]
+    partial class FinanceWriteDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.6")
+                .HasAnnotation("ProductVersion", "8.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -35,22 +32,56 @@ namespace Finance.Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .HasMaxLength(255)
-                        .HasColumnType("NVARCHAR");
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(80)
-                        .HasColumnType("NVARCHAR");
+                        .HasColumnType("nvarchar(80)");
 
                     b.Property<long>("UserId")
                         .HasMaxLength(160)
-                        .HasColumnType("BIGINT");
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Category", (string)null);
+                });
+
+            modelBuilder.Entity("Finance.Domain.Models.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Operation")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OutboxMessages", (string)null);
                 });
 
             modelBuilder.Entity("Finance.Domain.Models.Transaction", b =>
@@ -62,7 +93,7 @@ namespace Finance.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("MONEY");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<long>("CategoryId")
                         .HasColumnType("bigint");
@@ -76,14 +107,14 @@ namespace Finance.Infrastructure.Migrations
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(80)
-                        .HasColumnType("NVARCHAR");
+                        .HasColumnType("nvarchar(80)");
 
-                    b.Property<short>("Type")
-                        .HasColumnType("SMALLINT");
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.Property<long>("UserId")
                         .HasMaxLength(160)
-                        .HasColumnType("BIGINT");
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -116,6 +147,12 @@ namespace Finance.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

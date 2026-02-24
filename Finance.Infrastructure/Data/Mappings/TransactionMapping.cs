@@ -14,16 +14,14 @@ public class TransactionMapping : IEntityTypeConfiguration<Transaction>
 
         builder.Property(x => x.Title)
             .IsRequired(true)
-            .HasColumnType("NVARCHAR")
             .HasMaxLength(80);
 
         builder.Property(x => x.Type)
-            .IsRequired(true)
-            .HasColumnType("SMALLINT");
+            .IsRequired(true);
 
         builder.Property(x => x.Amount)
             .IsRequired(true)
-            .HasColumnType("MONEY");
+            .HasColumnType("decimal(18,2)");
 
         builder.Property(x => x.CreatedAt)
             .IsRequired(true);
@@ -33,7 +31,6 @@ public class TransactionMapping : IEntityTypeConfiguration<Transaction>
 
         builder.Property(x => x.UserId)
             .IsRequired(true)
-            .HasColumnType("BIGINT")
             .HasMaxLength(160);
 
         builder.HasOne(t => t.User)

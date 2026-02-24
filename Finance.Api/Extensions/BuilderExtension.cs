@@ -11,6 +11,7 @@ using Finance.Application.Services;
 using Finance.Contracts.Interfaces.Repositories;
 using Finance.Contracts.Interfaces.Services;
 using Finance.Infrastructure.Data;
+using Finance.Infrastructure.Outbox;
 using Finance.Infrastructure.Repositories;
 using Finance.Infrastructure.Services;
 using FluentValidation;
@@ -28,18 +29,39 @@ public static class BuilderExtension
 {
     public static void AddConfiguration(this WebApplicationBuilder builder)
     {
-        ApiConfiguration.ConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
+        ApiConfiguration.ConnectionWriteDatabase = builder.Configuration.GetConnectionString("WriteDatabase")
+                ?? builder.Configuration["ConnectionStrings:WriteDatabase"]
+                ?? string.Empty;
+
+        ApiConfiguration.ConnectionReadDatabase = builder.Configuration.GetConnectionString("ReadDatabase")
+            ?? builder.Configuration["ConnectionStrings:ReadDatabase"]
+            ?? string.Empty;
     }
 
     public static void AddDatabase(this WebApplicationBuilder builder)
     {
-        builder.Services.AddDbContext<FinanceDbContext>(o =>
-            o.UseSqlServer(ApiConfiguration.ConnectionString, sqlOptions =>
+        var writeConnection = builder.Configuration.GetConnectionString("WriteDatabase");
+        var readConnection = builder.Configuration.GetConnectionString("ReadDatabase");
+
+        builder.Services.AddDbContext<FinanceWriteDbContext>((sp, o) =>
+        {
+            o.UseSqlServer(writeConnection, sqlOptions =>
             {
                 sqlOptions.EnableRetryOnFailure(
                     maxRetryCount: 5,
                     maxRetryDelay: TimeSpan.FromSeconds(10),
                     errorNumbersToAdd: null);
+            })
+            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+        });
+
+        builder.Services.AddDbContext<FinanceReadDbContext>(o =>
+            o.UseNpgsql(readConnection, sqlOptions =>
+            {
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(10),
+                    errorCodesToAdd: null);
             }));
     }
 
@@ -152,6 +174,7 @@ public static class BuilderExtension
     public static void AddMediatR(this WebApplicationBuilder builder)
     {
         builder.Services.AddMediatR(typeof(AssemblyReference).Assembly);
+        builder.Services.AddMediatR(typeof(FinanceWriteDbContext).Assembly);
     }
 
     public static void AddServices(this WebApplicationBuilder builder)
@@ -177,5 +200,7 @@ public static class BuilderExtension
 
         builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
         builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
+
+        builder.Services.AddHostedService<OutboxProcessorHostedService>();
     }
 }
