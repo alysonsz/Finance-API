@@ -30,15 +30,30 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     {
         builder.ConfigureTestServices(services =>
         {
-            services.RemoveAll(typeof(DbContextOptions<FinanceDbContext>));
+            services.RemoveAll(typeof(DbContextOptions<FinanceWriteDbContext>));
+            services.RemoveAll(typeof(DbContextOptions<FinanceReadDbContext>));
 
-            services.AddDbContext<FinanceDbContext>(options =>
+            services.AddDbContext<FinanceWriteDbContext>(options =>
             {
                 options.UseSqlServer(_mssqlContainer.GetConnectionString());
             });
-        });
 
-        builder.UseSetting("ConnectionStrings:DefaultConnection", _mssqlContainer.GetConnectionString());
-        builder.UseSetting("ConnectionStrings:Redis", _redisContainer.GetConnectionString());
+            services.AddDbContext<FinanceReadDbContext>(options =>
+            {
+                options.UseSqlServer(_mssqlContainer.GetConnectionString());
+            });
+
+            var writeCs = _mssqlContainer.GetConnectionString().Replace("Database=master", "Database=FinanceWriteDb");
+            var readCs = _mssqlContainer.GetConnectionString().Replace("Database=master", "Database=FinanceReadDb");
+
+            services.AddDbContext<FinanceWriteDbContext>(options =>
+                options.UseSqlServer(writeCs, o => o.MigrationsHistoryTable("__EFMigrationsHistory_Write")));
+
+            services.AddDbContext<FinanceReadDbContext>(options =>
+                options.UseSqlServer(readCs, o => o.MigrationsHistoryTable("__EFMigrationsHistory_Read")));
+
+            builder.UseSetting("ConnectionStrings:WriteDatabase", writeCs);
+            builder.UseSetting("ConnectionStrings:ReadDatabase", readCs);
+        });
     }
 }

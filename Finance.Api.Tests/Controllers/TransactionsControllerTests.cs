@@ -2,7 +2,6 @@
 using Finance.Application.Features.Transactions.Create;
 using Finance.Application.Features.Transactions.Update;
 using Finance.Contracts.Requests.Transactions;
-using Finance.Contracts.Responses;
 using Finance.Domain.Enums;
 using Finance.Domain.Models.DTOs;
 using FluentAssertions;
@@ -21,10 +20,10 @@ public class TransactionsControllerTests(CustomWebApplicationFactory factory) : 
     {
         await AuthenticateAsync();
 
-        var catRes = await _client.PostAsJsonAsync("/v1/categories", new 
+        var catRes = await _client.PostAsJsonAsync("/v1/categories", new
         {
-            Title = "Test Cat", 
-            Description = "Desc" 
+            Title = "Test Cat",
+            Description = "Desc"
         });
         catRes.EnsureSuccessStatusCode();
 
@@ -56,10 +55,10 @@ public class TransactionsControllerTests(CustomWebApplicationFactory factory) : 
     {
         await AuthenticateAsync();
 
-        var catRes = await _client.PostAsJsonAsync("/v1/categories", new 
-        { 
-            Title = "Cat Update Tx", 
-            Description = "Desc" 
+        var catRes = await _client.PostAsJsonAsync("/v1/categories", new
+        {
+            Title = "Cat Update Tx",
+            Description = "Desc"
         });
         catRes.EnsureSuccessStatusCode();
 
@@ -101,10 +100,10 @@ public class TransactionsControllerTests(CustomWebApplicationFactory factory) : 
     {
         await AuthenticateAsync();
 
-        var catRes = await _client.PostAsJsonAsync("/v1/categories", new 
-        { 
-            Title = "Cat Delete Tx", 
-            Description = "Desc" 
+        var catRes = await _client.PostAsJsonAsync("/v1/categories", new
+        {
+            Title = "Cat Delete Tx",
+            Description = "Desc"
         });
         catRes.EnsureSuccessStatusCode();
 
@@ -136,10 +135,10 @@ public class TransactionsControllerTests(CustomWebApplicationFactory factory) : 
     {
         await AuthenticateAsync();
 
-        var catRes = await _client.PostAsJsonAsync("/v1/categories", new 
-        { 
-            Title = "Cat Period Tx", 
-            Description = "Desc" 
+        var catRes = await _client.PostAsJsonAsync("/v1/categories", new
+        {
+            Title = "Cat Period Tx",
+            Description = "Desc"
         });
         catRes.EnsureSuccessStatusCode();
 
