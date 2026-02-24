@@ -28,6 +28,7 @@
 
 	<ItemGroup>
 	  <Folder Include="Data\Migrations\Write\" />
+	  <Content Update="Data/Migrations/**" SonarQubeExclude="true" />
 	</ItemGroup>
 
 </Project>
