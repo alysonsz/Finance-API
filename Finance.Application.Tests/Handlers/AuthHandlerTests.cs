@@ -151,7 +151,7 @@ public class AuthHandlerTests
         _userRepoMock.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(existing);
         _userRepoMock.Setup(r => r.UpdateAsync(It.IsAny<User>())).ReturnsAsync((User u) => u);
 
-        var result = await handler.Handle(new UpdateProfileCommand { Name = "New Name" }, CancellationToken.None);
+        var result = await handler.Handle(new UpdateProfileCommand { Name = "New Name", Email = "u@email.com" }, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Data.Should().NotBeNull();
