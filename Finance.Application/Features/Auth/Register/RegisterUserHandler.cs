@@ -1,4 +1,4 @@
-﻿using Finance.Contracts.Interfaces.Repositories;
+﻿using Finance.Application.Interfaces.Repositories;
 using Finance.Contracts.Responses;
 using Finance.Domain.Models;
 using MediatR;
@@ -15,12 +15,11 @@ public sealed class RegisterUserHandler(IUserRepository userRepository) : IReque
             return Response<string>.Fail("O email informado já está em uso.");
         }
 
-        var user = new User
-        {
-            Name = request.Name,
-            Email = request.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)
-        };
+        var result = User.Create(request.Name, request.Email, BCrypt.Net.BCrypt.HashPassword(request.Password));
+        if (result.IsFailure)
+            return Response<string>.Fail(string.Join("; ", result.Errors));
+
+        var user = result.Value;
 
         await userRepository.AddAsync(user);
 

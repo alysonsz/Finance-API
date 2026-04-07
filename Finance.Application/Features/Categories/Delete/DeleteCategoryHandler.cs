@@ -1,7 +1,7 @@
-﻿using Finance.Contracts.Interfaces.Repositories;
+﻿using Finance.Application.Interfaces.Repositories;
+using Finance.Contracts.DTOs;
 using Finance.Contracts.Responses;
 using Finance.Domain.Models;
-using Finance.Domain.Models.DTOs;
 using MediatR;
 
 namespace Finance.Application.Features.Categories.Delete;
@@ -20,11 +20,11 @@ public class DeleteCategoryHandler(ICategoryRepository repository) : IRequestHan
             await repository.DeleteAsync(category);
 
             var dto = MapToDto(category);
-            return new Response<CategoryDto?>(dto, 200, "Categoria excluída com sucesso!");
+            return Response<CategoryDto?>.Success(dto, "Categoria excluída com sucesso!");
         }
         catch
         {
-            return new Response<CategoryDto?>(null, 500, "Não foi possível excluir a categoria");
+            return Response<CategoryDto?>.Fail("Não foi possível excluir a categoria");
         }
     }
 

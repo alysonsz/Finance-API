@@ -1,5 +1,5 @@
 ﻿using Finance.Application.Extensions;
-using Finance.Contracts.Interfaces.Repositories;
+using Finance.Application.Interfaces.Repositories;
 using Finance.Contracts.Responses;
 using Finance.Contracts.Responses.Auth;
 using MediatR;
@@ -27,7 +27,9 @@ public class UpdateProfileHandler(IUserRepository userRepository, IHttpContextAc
             return Response<UserProfileResponse?>.Fail("Usuário não encontrado.");
         }
 
-        user.Name = request.Name;
+        var updateResult = user.UpdateProfile(request.Name, user.Email);
+        if (updateResult.IsFailure)
+            return Response<UserProfileResponse?>.Fail(string.Join("; ", updateResult.Errors));
 
         var updatedUser = await userRepository.UpdateAsync(user);
 

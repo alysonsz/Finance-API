@@ -1,5 +1,5 @@
-﻿using Finance.Domain.Models;
-using Finance.Domain.Models.DTOs;
+﻿using Finance.Contracts.DTOs;
+using Finance.Domain.Models;
 
 namespace Finance.Application.Mappers;
 
@@ -11,14 +11,9 @@ public static class TransactionMapper
             Id = transaction.Id,
             Title = transaction.Title,
             Amount = transaction.Amount,
-            Type = transaction.Type,
+            Type = transaction.Type.ToString(),
             PaidOrReceivedAt = transaction.PaidOrReceivedAt,
             CreatedAt = transaction.CreatedAt,
-            Category = new CategoryDto
-            {
-                Id = category.Id,
-                Title = category.Title,
-                Description = category.Description
-            }
+            CategoryTitle = category.Title
         };
 }

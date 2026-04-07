@@ -1,5 +1,5 @@
-﻿using Finance.Contracts.Responses;
-using Finance.Domain.Models.DTOs;
+﻿using Finance.Contracts.DTOs;
+using Finance.Contracts.Responses;
 using MediatR;
 
 namespace Finance.Application.Features.Categories.Delete;

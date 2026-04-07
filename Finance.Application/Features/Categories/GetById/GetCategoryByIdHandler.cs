@@ -1,7 +1,7 @@
-﻿using Finance.Contracts.Interfaces.Repositories;
+﻿using Finance.Application.Interfaces.Repositories;
+using Finance.Contracts.DTOs;
 using Finance.Contracts.Responses;
 using Finance.Domain.Models;
-using Finance.Domain.Models.DTOs;
 using MediatR;
 
 namespace Finance.Application.Features.Categories.GetById;
@@ -18,11 +18,11 @@ public class GetCategoryByIdHandler(ICategoryRepository repository) : IRequestHa
                 return new Response<CategoryDto?>(null, 404, "Categoria não encontrada ou não pertence ao usuário.");
 
             var dto = MapToDto(category);
-            return new Response<CategoryDto?>(dto); 
+            return Response<CategoryDto?>.Success(dto);
         }
         catch
         {
-            return new Response<CategoryDto?>(null, 500, "Não foi possível recuperar a categoria.");
+            return Response<CategoryDto?>.Fail("Não foi possível recuperar a categoria.");
         }
     }
 

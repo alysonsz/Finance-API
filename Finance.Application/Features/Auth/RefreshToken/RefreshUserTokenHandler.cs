@@ -1,4 +1,4 @@
-﻿using Finance.Contracts.Interfaces.Repositories;
+﻿using Finance.Application.Interfaces.Repositories;
 using Finance.Contracts.Interfaces.Services;
 using Finance.Contracts.Responses;
 using Finance.Contracts.Responses.Auth;
@@ -24,9 +24,7 @@ public class RefreshUserTokenHandler(IUserRepository userRepository, ITokenServi
 
             var user = await userRepository.GetByIdAsync(userId);
 
-            if (user is null ||
-                user.RefreshToken != request.RefreshToken ||
-                user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            if (user is null || !user.IsRefreshTokenValid(request.RefreshToken))
             {
                 return Response<LoginResponse?>.Fail("Token inválido ou expirado.");
             }
@@ -34,8 +32,7 @@ public class RefreshUserTokenHandler(IUserRepository userRepository, ITokenServi
             var newAccessToken = tokenService.GenerateAccessToken(user);
             var newRefreshToken = tokenService.GenerateRefreshToken();
 
-            user.RefreshToken = newRefreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            user.SetRefreshToken(newRefreshToken, DateTime.UtcNow.AddDays(7));
             await userRepository.UpdateAsync(user);
 
             var loginResponse = new LoginResponse
