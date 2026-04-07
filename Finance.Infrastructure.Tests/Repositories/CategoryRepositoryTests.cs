@@ -199,7 +199,9 @@ public class CategoryRepositoryTests : IDisposable
         writeContext.Entry(originalCategory).State = EntityState.Detached;
 
         var repository = new CategoryRepository(readContext, writeContext);
-        typeof(Category).GetProperty("Title")?.SetValue(originalCategory, "Atualizado");
+        
+        var updateResult = originalCategory.Update("Atualizado", "Updated Desc");
+        updateResult.IsSuccess.Should().BeTrue();
 
         await repository.UpdateAsync(originalCategory);
 

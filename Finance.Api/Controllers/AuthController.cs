@@ -64,7 +64,8 @@ public class AuthController(IMediator mediator) : ControllerBase
     {
         var command = new UpdateProfileCommand
         {
-            Name = request.Name
+            Name = request.Name,
+            Email = request.Email
         };
 
         var response = await mediator.Send(command);

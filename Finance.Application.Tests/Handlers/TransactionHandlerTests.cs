@@ -182,8 +182,8 @@ public class TransactionHandlerTests
 
         var txs = new List<Transaction>
         {
-            Transaction.Create("Salário", 5000, ETransactionType.Deposit, 123, 1, DateTime.UtcNow).Value,
-            Transaction.Create("Aluguel", 1500, ETransactionType.Withdraw, 123, 2, DateTime.UtcNow).Value
+            Transaction.Create("Salário", 5000, ETransactionType.Deposit, 1, 123, DateTime.UtcNow).Value,
+            Transaction.Create("Aluguel", 1500, ETransactionType.Withdraw, 2, 123, DateTime.UtcNow).Value
         };
         txs[0].GetType().GetProperty("Id")?.SetValue(txs[0], 1L);
         txs[0].GetType().GetProperty("CreatedAt")?.SetValue(txs[0], DateTime.UtcNow);
@@ -216,9 +216,9 @@ public class TransactionHandlerTests
 
         var txs = new List<Transaction>
         {
-            Transaction.Create("Casa", 100, ETransactionType.Withdraw, 123, 1, DateTime.UtcNow).Value,
-            Transaction.Create("Casa", 50, ETransactionType.Withdraw, 123, 1, DateTime.UtcNow).Value,
-            Transaction.Create("Trabalho", 5000, ETransactionType.Deposit, 123, 2, DateTime.UtcNow).Value
+            Transaction.Create("Casa", 100, ETransactionType.Withdraw, 1, 123, DateTime.UtcNow).Value,
+            Transaction.Create("Casa", 50, ETransactionType.Withdraw, 1, 123, DateTime.UtcNow).Value,
+            Transaction.Create("Trabalho", 5000, ETransactionType.Deposit, 2, 123, DateTime.UtcNow).Value
         };
 
         _txRepoMock.Setup(r => r.GetAllByPeriodAsync(command.UserId, It.IsAny<DateTime>(), It.IsAny<DateTime>()))

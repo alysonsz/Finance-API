@@ -69,7 +69,7 @@ public class TransactionRepositoryTests : IDisposable
         var user = await SeedUserAsync(writeContext);
         var category = await SeedCategoryAsync(writeContext, user.Id);
         var repository = new TransactionRepository(readContext, writeContext);
-        var txResult = Transaction.Create("Almoço", 50, ETransactionType.Withdraw, user.Id, category.Id, DateTime.UtcNow);
+        var txResult = Transaction.Create("Almoço", 50, ETransactionType.Withdraw, category.Id, user.Id, DateTime.UtcNow);
         var newTransaction = txResult.Value;
 
         var createdTransaction = await repository.CreateAsync(newTransaction);
@@ -91,7 +91,7 @@ public class TransactionRepositoryTests : IDisposable
 
         var user = await SeedUserAsync(writeContext);
         var category = await SeedCategoryAsync(writeContext, user.Id);
-        var txResult = Transaction.Create("Original", 100, ETransactionType.Withdraw, user.Id, category.Id, DateTime.UtcNow);
+        var txResult = Transaction.Create("Original", 100, ETransactionType.Withdraw, category.Id, user.Id, DateTime.UtcNow);
         var originalTransaction = txResult.Value;
 
         writeContext.Add(originalTransaction);
@@ -119,7 +119,7 @@ public class TransactionRepositoryTests : IDisposable
 
         var user = await SeedUserAsync(writeContext);
         var category = await SeedCategoryAsync(writeContext, user.Id);
-        var txResult = Transaction.Create("Jantar", 120, ETransactionType.Withdraw, user.Id, category.Id, DateTime.UtcNow);
+        var txResult = Transaction.Create("Jantar", 120, ETransactionType.Withdraw, category.Id, user.Id, DateTime.UtcNow);
         var transaction = txResult.Value;
 
         writeContext.Add(transaction);
@@ -149,9 +149,9 @@ public class TransactionRepositoryTests : IDisposable
         var tomorrow = today.AddDays(1);
 
         writeContext.Transactions.AddRange(
-            Transaction.Create("Ontem", 10, ETransactionType.Withdraw, user.Id, category.Id, yesterday).Value,
-            Transaction.Create("Hoje", 20, ETransactionType.Withdraw, user.Id, category.Id, today).Value,
-            Transaction.Create("Amanhã", 30, ETransactionType.Withdraw, user.Id, category.Id, tomorrow).Value
+            Transaction.Create("Ontem", 10, ETransactionType.Withdraw, category.Id, user.Id, yesterday).Value,
+            Transaction.Create("Hoje", 20, ETransactionType.Withdraw, category.Id, user.Id, today).Value,
+            Transaction.Create("Amanhã", 30, ETransactionType.Withdraw, category.Id, user.Id, tomorrow).Value
         );
         await writeContext.SaveChangesAsync();
 
@@ -172,7 +172,7 @@ public class TransactionRepositoryTests : IDisposable
 
         var user = await SeedUserAsync(writeContext);
         var category = await SeedCategoryAsync(writeContext, user.Id);
-        var txResult = Transaction.Create("Qualquer", 10, ETransactionType.Withdraw, user.Id, category.Id, DateTime.UtcNow);
+        var txResult = Transaction.Create("Qualquer", 10, ETransactionType.Withdraw, category.Id, user.Id, DateTime.UtcNow);
         writeContext.Transactions.Add(txResult.Value);
 
         await writeContext.SaveChangesAsync();
@@ -193,7 +193,7 @@ public class TransactionRepositoryTests : IDisposable
 
         var user = await SeedUserAsync(writeContext);
         var category = await SeedCategoryAsync(writeContext, user.Id);
-        var txResult = Transaction.Create("Para Deletar", 99, ETransactionType.Withdraw, user.Id, category.Id, DateTime.UtcNow);
+        var txResult = Transaction.Create("Para Deletar", 99, ETransactionType.Withdraw, category.Id, user.Id, DateTime.UtcNow);
         var transaction = txResult.Value;
 
         writeContext.Add(transaction);

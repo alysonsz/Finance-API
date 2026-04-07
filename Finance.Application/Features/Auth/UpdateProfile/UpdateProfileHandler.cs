@@ -27,7 +27,7 @@ public class UpdateProfileHandler(IUserRepository userRepository, IHttpContextAc
             return Response<UserProfileResponse?>.Fail("Usuário não encontrado.");
         }
 
-        var updateResult = user.UpdateProfile(request.Name, user.Email);
+        var updateResult = user.UpdateProfile(request.Name, request.Email);
         if (updateResult.IsFailure)
             return Response<UserProfileResponse?>.Fail(string.Join("; ", updateResult.Errors));
 

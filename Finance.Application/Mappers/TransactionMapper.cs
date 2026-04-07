@@ -14,6 +14,7 @@ public static class TransactionMapper
             Type = transaction.Type.ToString(),
             PaidOrReceivedAt = transaction.PaidOrReceivedAt,
             CreatedAt = transaction.CreatedAt,
+            CategoryId = transaction.CategoryId,
             CategoryTitle = category.Title
         };
 }

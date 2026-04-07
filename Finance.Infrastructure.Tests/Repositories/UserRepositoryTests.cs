@@ -131,7 +131,9 @@ public class UserRepositoryTests : IDisposable
         writeContext.Entry(originalUser).State = EntityState.Detached;
 
         var repository = new UserRepository(readContext, writeContext);
-        typeof(User).GetProperty("Name")?.SetValue(originalUser, "Updated Name");
+        
+        var updateResult = originalUser.UpdateProfile("Updated Name", originalUser.Email);
+        updateResult.IsSuccess.Should().BeTrue();
 
         await repository.UpdateAsync(originalUser);
 

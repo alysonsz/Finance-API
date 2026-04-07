@@ -1,6 +1,4 @@
-﻿using Finance.Domain.Enums;
-
-namespace Finance.Domain.Models.DTOs;
+﻿namespace Finance.Domain.Models.DTOs;
 
 public class TransactionDto
 {
