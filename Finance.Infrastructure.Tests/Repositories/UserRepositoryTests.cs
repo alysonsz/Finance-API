@@ -46,12 +46,8 @@ public class UserRepositoryTests : IDisposable
         await using var readContext = new FinanceReadDbContext(_readOptions);
 
         var repository = new UserRepository(readContext, writeContext);
-        var newUser = new User 
-        { 
-            Name = "Herbert", 
-            Email = "herbert@email.com", 
-            PasswordHash = "some_hash" 
-        };
+        var userResult = User.Create("Herbert", "herbert@email.com", "some_hash");
+        var newUser = userResult.Value;
 
         await repository.AddAsync(newUser);
 
@@ -70,12 +66,8 @@ public class UserRepositoryTests : IDisposable
         await using var writeContext = new FinanceWriteDbContext(_writeOptions);
         await using var readContext = new FinanceReadDbContext(_readOptions);
 
-        var user = new User 
-        { 
-            Name = "Test User",
-            Email = "test@email.com", 
-            PasswordHash = "hash" 
-        };
+        var userResult = User.Create("Test User", "test@email.com", "hash");
+        var user = userResult.Value;
 
         writeContext.Users.Add(user);
 
@@ -97,12 +89,8 @@ public class UserRepositoryTests : IDisposable
         await using var readContext = new FinanceReadDbContext(_readOptions);
 
         var originalEmail = "Case.Test@Email.COM";
-        var user = new User 
-        { 
-            Name = "Case Test", 
-            Email = originalEmail, 
-            PasswordHash = "hash" 
-        };
+        var userResult = User.Create("Case Test", originalEmail, "hash");
+        var user = userResult.Value;
 
         writeContext.Users.Add(user);
         await writeContext.SaveChangesAsync();
@@ -134,12 +122,8 @@ public class UserRepositoryTests : IDisposable
         await using var writeContext = new FinanceWriteDbContext(_writeOptions);
         await using var readContext = new FinanceReadDbContext(_readOptions);
 
-        var originalUser = new User 
-        { 
-            Name = "Original Name", 
-            Email = "update@test.com", 
-            PasswordHash = "hash" 
-        };
+        var userResult = User.Create("Original Name", "update@test.com", "hash");
+        var originalUser = userResult.Value;
 
         writeContext.Users.Add(originalUser);
         await writeContext.SaveChangesAsync();
@@ -147,7 +131,7 @@ public class UserRepositoryTests : IDisposable
         writeContext.Entry(originalUser).State = EntityState.Detached;
 
         var repository = new UserRepository(readContext, writeContext);
-        originalUser.Name = "Updated Name";
+        typeof(User).GetProperty("Name")?.SetValue(originalUser, "Updated Name");
 
         await repository.UpdateAsync(originalUser);
 

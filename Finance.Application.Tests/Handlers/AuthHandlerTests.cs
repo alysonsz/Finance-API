@@ -3,8 +3,7 @@ using Finance.Application.Features.Auth.Login;
 using Finance.Application.Features.Auth.RefreshToken;
 using Finance.Application.Features.Auth.Register;
 using Finance.Application.Features.Auth.UpdateProfile;
-using Finance.Contracts.Interfaces.Repositories;
-using Finance.Contracts.Interfaces.Services;
+using Finance.Application.Interfaces.Repositories;
 using Finance.Domain.Models;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +15,7 @@ namespace Finance.Application.Tests.Handlers;
 public class AuthHandlerTests
 {
     private readonly Mock<IUserRepository> _userRepoMock = new();
-    private readonly Mock<ITokenService> _tokenMock = new();
+    private readonly Mock<Finance.Contracts.Interfaces.Services.ITokenService> _tokenMock = new();
     private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock = new();
 
     [Fact]
@@ -26,13 +25,9 @@ public class AuthHandlerTests
 
         var command = new LoginUserCommand { Email = "test@email.com", Password = "Password123" };
 
-        var user = new User
-        {
-            Id = 1,
-            Email = command.Email,
-            Name = "User",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(command.Password)
-        };
+        var userResult = User.Create("User", command.Email, BCrypt.Net.BCrypt.HashPassword(command.Password));
+        var user = userResult.Value;
+        user.GetType().GetProperty("Id")?.SetValue(user, 1L);
 
         _userRepoMock.Setup(r => r.GetByEmailAsync(command.Email)).ReturnsAsync(user);
         _tokenMock.Setup(t => t.GenerateAccessToken(It.IsAny<User>())).Returns("fake-jwt");
@@ -84,12 +79,18 @@ public class AuthHandlerTests
         var command = new RegisterUserCommand
         {
             Email = "existente@email.com",
-            Password = "123",
-            Name = "X"
+            Password = "Teste@123",
+            Name = "Teste"
         };
 
         _userRepoMock.Setup(r => r.GetByEmailAsync(command.Email))
-            .ReturnsAsync(new User { Id = 10, Email = command.Email });
+            .ReturnsAsync(() =>
+            {
+                var userResult = User.Create("User", command.Email, BCrypt.Net.BCrypt.HashPassword(command.Password));
+                var user = userResult.Value;
+                user.GetType().GetProperty("Id")?.SetValue(user, 10L);
+                return user;
+            });
 
         var result = await handler.Handle(command, CancellationToken.None);
 
@@ -114,7 +115,13 @@ public class AuthHandlerTests
         var handler = new GetProfileHandler(_userRepoMock.Object, _httpContextAccessorMock.Object);
 
         _userRepoMock.Setup(r => r.GetByIdAsync(userId))
-            .ReturnsAsync(new User { Id = userId, Name = "User", Email = "u@email.com" });
+            .ReturnsAsync(() =>
+            {
+                var userResult = User.Create("User", "u@email.com", "hash");
+                var user = userResult.Value;
+                user.GetType().GetProperty("Id")?.SetValue(user, (long)userId);
+                return user;
+            });
 
         var result = await handler.Handle(new GetProfileCommand(), CancellationToken.None);
 
@@ -137,7 +144,9 @@ public class AuthHandlerTests
 
         var handler = new UpdateProfileHandler(_userRepoMock.Object, _httpContextAccessorMock.Object);
 
-        var existing = new User { Id = userId, Name = "Old", Email = "u@email.com" };
+        var existingResult = User.Create("Old", "u@email.com", "hash");
+        var existing = existingResult.Value;
+        existing.GetType().GetProperty("Id")?.SetValue(existing, (long)userId);
 
         _userRepoMock.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(existing);
         _userRepoMock.Setup(r => r.UpdateAsync(It.IsAny<User>())).ReturnsAsync((User u) => u);

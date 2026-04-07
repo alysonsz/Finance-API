@@ -3,7 +3,7 @@ using Finance.Application.Features.Categories.Delete;
 using Finance.Application.Features.Categories.GetAll;
 using Finance.Application.Features.Categories.GetById;
 using Finance.Application.Features.Categories.Update;
-using Finance.Contracts.Interfaces.Repositories;
+using Finance.Application.Interfaces.Repositories;
 using Finance.Domain.Models;
 using FluentAssertions;
 using Moq;
@@ -72,7 +72,9 @@ public class CategoryHandlerTests
             Description = "Contas"
         };
 
-        var existing = new Category { Id = 1, UserId = 123, Title = "Casa", Description = "Antigo" };
+        var catResult = Category.Create("Casa", "Antigo", 123);
+        var existing = catResult.Value;
+        existing.GetType().GetProperty("Id")?.SetValue(existing, 1L);
 
         _repoMock.Setup(r => r.GetByIdAsync(command.Id, command.UserId))
             .ReturnsAsync(existing);
@@ -119,7 +121,9 @@ public class CategoryHandlerTests
         var handler = new DeleteCategoryHandler(_repoMock.Object);
 
         var command = new DeleteCategoryCommand { Id = 1, UserId = 123 };
-        var existing = new Category { Id = 1, UserId = 123, Title = "A ser deletada" };
+        var catResult = Category.Create("A ser deletada", null, 123);
+        var existing = catResult.Value;
+        existing.GetType().GetProperty("Id")?.SetValue(existing, 1L);
 
         _repoMock.Setup(r => r.GetByIdAsync(command.Id, command.UserId))
             .ReturnsAsync(existing);
@@ -163,10 +167,13 @@ public class CategoryHandlerTests
 
         var categories = new List<Category>
         {
-            new() { Id = 1, UserId = 123, Title = "Casa" },
-            new() { Id = 2, UserId = 123, Title = "Saúde" },
-            new() { Id = 3, UserId = 123, Title = "Transporte" }
+            Category.Create("Casa", null, 123).Value,
+            Category.Create("Saúde", null, 123).Value,
+            Category.Create("Transporte", null, 123).Value
         };
+        categories[0].GetType().GetProperty("Id")?.SetValue(categories[0], 1L);
+        categories[1].GetType().GetProperty("Id")?.SetValue(categories[1], 2L);
+        categories[2].GetType().GetProperty("Id")?.SetValue(categories[2], 3L);
 
         _repoMock.Setup(r => r.GetAllAsync(command.UserId))
             .ReturnsAsync(categories);
