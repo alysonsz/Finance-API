@@ -9,15 +9,14 @@ public class Result<T>
 {
     public bool IsSuccess { get; }
     public bool IsFailure => !IsSuccess;
-    public T Value { get; } = default!;
-    public List<string> Errors { get; } = new();
+    public T Value { get; }
+    public List<string> Errors { get; }
 
     private Result(bool isSuccess, T value, List<string>? errors = null)
     {
         IsSuccess = isSuccess;
         Value = value;
-        if (errors != null)
-            Errors = errors;
+        Errors = errors ?? new List<string>();
     }
 
     public static Result<T> Success(T value)
@@ -36,7 +35,7 @@ public class Result<T>
     }
 }
 
-public class Result
+public static class Result
 {
     public static Result<T> Success<T>(T value)
     {

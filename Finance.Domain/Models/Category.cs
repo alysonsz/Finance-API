@@ -18,7 +18,7 @@ public class Category : Entity
         if (string.IsNullOrWhiteSpace(title) || title.Length < 3)
             errors.Add("Título deve ter pelo menos 3 caracteres");
 
-        if (title.Length > 100)
+        if (!string.IsNullOrEmpty(title) && title.Length > 100)
             errors.Add("Título deve ter no máximo 100 caracteres");
 
         if (userId <= 0)
@@ -44,7 +44,7 @@ public class Category : Entity
         if (string.IsNullOrWhiteSpace(title) || title.Length < 3)
             errors.Add("Título deve ter pelo menos 3 caracteres");
 
-        if (title.Length > 100)
+        if (!string.IsNullOrEmpty(title) && title.Length > 100)
             errors.Add("Título deve ter no máximo 100 caracteres");
 
         if (errors.Any())
