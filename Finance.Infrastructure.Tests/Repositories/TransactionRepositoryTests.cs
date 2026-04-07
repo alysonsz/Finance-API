@@ -42,12 +42,8 @@ public class TransactionRepositoryTests : IDisposable
 
     private async Task<User> SeedUserAsync(DbContext context)
     {
-        var user = new User 
-        { 
-            Name = "Test User", 
-            Email = "test@email.com", 
-            PasswordHash = "123" 
-        };
+        var userResult = User.Create("Test User", "test@email.com", "123");
+        var user = userResult.Value;
 
         context.Add(user);
         await context.SaveChangesAsync();
@@ -56,12 +52,8 @@ public class TransactionRepositoryTests : IDisposable
 
     private async Task<Category> SeedCategoryAsync(DbContext context, long userId)
     {
-        var category = new Category 
-        { 
-            Title = "Alimentação", 
-            UserId = userId, 
-            Description = "Test" 
-        };
+        var catResult = Category.Create("Alimentação", "Test", userId);
+        var category = catResult.Value;
 
         context.Add(category);
         await context.SaveChangesAsync();
@@ -77,15 +69,8 @@ public class TransactionRepositoryTests : IDisposable
         var user = await SeedUserAsync(writeContext);
         var category = await SeedCategoryAsync(writeContext, user.Id);
         var repository = new TransactionRepository(readContext, writeContext);
-        var newTransaction = new Transaction 
-        { 
-            Title = "Almoço", 
-            Amount = 50, 
-            Type = ETransactionType.Withdraw, 
-            UserId = user.Id, 
-            CategoryId = category.Id, 
-            PaidOrReceivedAt = DateTime.UtcNow 
-        };
+        var txResult = Transaction.Create("Almoço", 50, ETransactionType.Withdraw, category.Id, user.Id, DateTime.UtcNow);
+        var newTransaction = txResult.Value;
 
         var createdTransaction = await repository.CreateAsync(newTransaction);
 
@@ -95,7 +80,7 @@ public class TransactionRepositoryTests : IDisposable
         await using var assertContext = new FinanceReadDbContext(_readOptions);
         var transactionInDb = await assertContext.Transactions.FindAsync(createdTransaction.Id);
         transactionInDb.Should().NotBeNull();
-        transactionInDb!.Amount.Should().Be(50);
+        transactionInDb!.Amount.Should().Be(-50);
     }
 
     [Fact]
@@ -106,15 +91,8 @@ public class TransactionRepositoryTests : IDisposable
 
         var user = await SeedUserAsync(writeContext);
         var category = await SeedCategoryAsync(writeContext, user.Id);
-        var originalTransaction = new Transaction 
-        { 
-            Title = "Original", 
-            Amount = 100, 
-            PaidOrReceivedAt = DateTime.UtcNow, 
-            UserId = user.Id, 
-            CategoryId = category.Id, 
-            Type = ETransactionType.Withdraw 
-        };
+        var txResult = Transaction.Create("Original", 100, ETransactionType.Withdraw, category.Id, user.Id, DateTime.UtcNow);
+        var originalTransaction = txResult.Value;
 
         writeContext.Add(originalTransaction);
         await writeContext.SaveChangesAsync();
@@ -122,7 +100,7 @@ public class TransactionRepositoryTests : IDisposable
         writeContext.Entry(originalTransaction).State = EntityState.Detached;
 
         var repository = new TransactionRepository(readContext, writeContext);
-        originalTransaction.Amount = 150;
+        typeof(Transaction).GetProperty("Amount")?.SetValue(originalTransaction, 150m);
 
         await repository.UpdateAsync(originalTransaction);
 
@@ -141,15 +119,8 @@ public class TransactionRepositoryTests : IDisposable
 
         var user = await SeedUserAsync(writeContext);
         var category = await SeedCategoryAsync(writeContext, user.Id);
-        var transaction = new Transaction 
-        { 
-            Title = "Jantar", 
-            Amount = 120, 
-            Type = ETransactionType.Withdraw, 
-            UserId = user.Id, 
-            CategoryId = category.Id, 
-            PaidOrReceivedAt = DateTime.UtcNow 
-        };
+        var txResult = Transaction.Create("Jantar", 120, ETransactionType.Withdraw, category.Id, user.Id, DateTime.UtcNow);
+        var transaction = txResult.Value;
 
         writeContext.Add(transaction);
         await writeContext.SaveChangesAsync();
@@ -178,12 +149,9 @@ public class TransactionRepositoryTests : IDisposable
         var tomorrow = today.AddDays(1);
 
         writeContext.Transactions.AddRange(
-            new Transaction 
-            { Title = "Ontem", Amount = 10, PaidOrReceivedAt = yesterday, UserId = user.Id, CategoryId = category.Id, Type = ETransactionType.Withdraw },
-            new Transaction 
-            { Title = "Hoje", Amount = 20, PaidOrReceivedAt = today, UserId = user.Id, CategoryId = category.Id, Type = ETransactionType.Withdraw },
-            new Transaction 
-            { Title = "Amanhã", Amount = 30, PaidOrReceivedAt = tomorrow, UserId = user.Id, CategoryId = category.Id, Type = ETransactionType.Withdraw }
+            Transaction.Create("Ontem", 10, ETransactionType.Withdraw, category.Id, user.Id, yesterday).Value,
+            Transaction.Create("Hoje", 20, ETransactionType.Withdraw, category.Id, user.Id, today).Value,
+            Transaction.Create("Amanhã", 30, ETransactionType.Withdraw, category.Id, user.Id, tomorrow).Value
         );
         await writeContext.SaveChangesAsync();
 
@@ -204,15 +172,8 @@ public class TransactionRepositoryTests : IDisposable
 
         var user = await SeedUserAsync(writeContext);
         var category = await SeedCategoryAsync(writeContext, user.Id);
-        writeContext.Transactions.Add(new Transaction 
-        { 
-            Title = "Qualquer", 
-            Amount = 10, 
-            PaidOrReceivedAt = DateTime.UtcNow, 
-            UserId = user.Id, 
-            CategoryId = category.Id, 
-            Type = ETransactionType.Withdraw 
-        });
+        var txResult = Transaction.Create("Qualquer", 10, ETransactionType.Withdraw, category.Id, user.Id, DateTime.UtcNow);
+        writeContext.Transactions.Add(txResult.Value);
 
         await writeContext.SaveChangesAsync();
 
@@ -232,15 +193,8 @@ public class TransactionRepositoryTests : IDisposable
 
         var user = await SeedUserAsync(writeContext);
         var category = await SeedCategoryAsync(writeContext, user.Id);
-        var transaction = new Transaction 
-        { 
-            Title = "Para Deletar", 
-            Amount = 99, 
-            Type = ETransactionType.Withdraw, 
-            UserId = user.Id, 
-            CategoryId = category.Id, 
-            PaidOrReceivedAt = DateTime.UtcNow 
-        };
+        var txResult = Transaction.Create("Para Deletar", 99, ETransactionType.Withdraw, category.Id, user.Id, DateTime.UtcNow);
+        var transaction = txResult.Value;
 
         writeContext.Add(transaction);
         await writeContext.SaveChangesAsync();

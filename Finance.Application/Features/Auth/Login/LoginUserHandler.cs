@@ -1,4 +1,4 @@
-﻿using Finance.Contracts.Interfaces.Repositories;
+﻿using Finance.Application.Interfaces.Repositories;
 using Finance.Contracts.Interfaces.Services;
 using Finance.Contracts.Responses;
 using Finance.Contracts.Responses.Auth;
@@ -21,8 +21,7 @@ public class LoginUserHandler(IUserRepository userRepository, ITokenService toke
         var accessToken = tokenService.GenerateAccessToken(user);
         var refreshToken = tokenService.GenerateRefreshToken();
 
-        user.RefreshToken = refreshToken;
-        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        user.SetRefreshToken(refreshToken, DateTime.UtcNow.AddDays(7));
 
         await userRepository.UpdateAsync(user);
 

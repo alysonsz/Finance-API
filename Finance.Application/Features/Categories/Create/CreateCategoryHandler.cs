@@ -1,7 +1,7 @@
-﻿using Finance.Contracts.Interfaces.Repositories;
+﻿using Finance.Application.Interfaces.Repositories;
+using Finance.Contracts.DTOs;
 using Finance.Contracts.Responses;
 using Finance.Domain.Models;
-using Finance.Domain.Models.DTOs;
 using MediatR;
 
 namespace Finance.Application.Features.Categories.Create;
@@ -10,12 +10,11 @@ public class CreateCategoryHandler(ICategoryRepository repository) : IRequestHan
 {
     public async Task<Response<CategoryDto?>> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
     {
-        var category = new Category
-        {
-            UserId = request.UserId,
-            Title = request.Title,
-            Description = request.Description
-        };
+        var result = Category.Create(request.Title, request.Description, request.UserId);
+        if (result.IsFailure)
+            return Response<CategoryDto?>.Fail(string.Join("; ", result.Errors));
+
+        var category = result.Value;
 
         try
         {

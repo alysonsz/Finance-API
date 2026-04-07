@@ -7,8 +7,7 @@ using Finance.Application.Features.Categories.Update;
 using Finance.Application.Features.Transactions.Create;
 using Finance.Application.Features.Transactions.GetByPeriod;
 using Finance.Application.Features.Transactions.Update;
-using Finance.Application.Services;
-using Finance.Contracts.Interfaces.Repositories;
+using Finance.Application.Interfaces.Repositories;
 using Finance.Contracts.Interfaces.Services;
 using Finance.Infrastructure.Data;
 using Finance.Infrastructure.Outbox;
@@ -72,7 +71,6 @@ public static class BuilderExtension
         builder.AddCache();
         builder.AddCors();
         builder.AddDocumentation();
-        builder.AddServices();
         builder.AddMediatR();
 
         builder.Services.AddHttpContextAccessor();
@@ -182,10 +180,6 @@ public static class BuilderExtension
         builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
         builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
-
-        builder.Services.AddScoped<ICategoryService, CategoryService>();
-        builder.Services.AddScoped<ITransactionService, TransactionService>();
-        builder.Services.AddScoped<IUserService, UserService>();
 
         builder.Services.AddScoped<ITokenService, TokenService>();
         builder.Services.AddScoped<ICacheService, CacheService>();

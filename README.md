@@ -142,12 +142,15 @@ A solução segue rigorosamente os princípios da **Clean Architecture**, com re
 
 ```
 Finance API
-├── 📁 Finance.Domain          # Entidades, Enums, Interfaces e Regras de Negócio
-├── 📁 Finance.Application     # Casos de Uso (Handlers), Validações, Mapeamentos
-├── 📁 Finance.Contracts       # DTOs, Requests, Responses e Interfaces Compartilhadas
-├── 📁 Finance.Infrastructure  # EF Core, Redis, Repositórios, Migrations
-├── 📁 Finance.Api             # Controllers, Docker, DI, Middlewares
-└── 📁 Finance.Tests           # Testes (organizados por camada: Domain, Application, Api)
+├── 📁 Finance.Domain              # Entidades Rich Domain, Enums, SeedWork
+├── 📁 Finance.Domain.Tests        # Testes de unidade do Domain
+├── 📁 Finance.Application         # Handlers CQRS, Mappers, Repository Interfaces
+├── 📁 Finance.Application.Tests   # Testes de handlers unitários
+├── 📁 Finance.Contracts           # DTOs, Requests, Responses compartilhados
+├── 📁 Finance.Infrastructure      # EF Core, Redis, Repositórios, Services
+├── 📁 Finance.Infrastructure.Tests # Testes de integração de repositories
+├── 📁 Finance.Api                 # Controllers, DI, Middlewares, Program
+└── 📁 Finance.Api.Tests          # Testes de integração da API (Testcontainers)
 ```
 
 > 💡 **Observação:** a camada de testes é organizada por contexto/camada para refletir a arquitetura da solução, facilitando manutenção, leitura e evolução dos testes.

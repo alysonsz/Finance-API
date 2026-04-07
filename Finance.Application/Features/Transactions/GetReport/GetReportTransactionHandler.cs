@@ -1,4 +1,4 @@
-﻿using Finance.Contracts.Interfaces.Repositories;
+﻿using Finance.Application.Interfaces.Repositories;
 using Finance.Contracts.Responses;
 using Finance.Contracts.Responses.Categories;
 using Finance.Contracts.Responses.Transactions;
@@ -42,11 +42,11 @@ public class GetReportTransactionHandler(ITransactionRepository transactionRepos
                     }).ToList()
             };
 
-            return new Response<TransactionReportResponse>(report, message: "Relatório gerado com sucesso.");
+            return Response<TransactionReportResponse>.Success(report, "Relatório gerado com sucesso.");
         }
         catch
         {
-            return new Response<TransactionReportResponse>(null, 500, "Não foi possível gerar o relatório.");
+            return Response<TransactionReportResponse>.Fail("Não foi possível gerar o relatório.");
         }
     }
 }

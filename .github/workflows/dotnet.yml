@@ -2,7 +2,7 @@ name: .NET Build and Test
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "refactor/clean-architecture" ]
   pull_request:
     branches: [ "main" ]
 

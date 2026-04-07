@@ -1,5 +1,5 @@
 ﻿using Finance.Application.Extensions;
-using Finance.Contracts.Interfaces.Repositories;
+using Finance.Application.Interfaces.Repositories;
 using Finance.Contracts.Responses;
 using Finance.Contracts.Responses.Auth;
 using MediatR;

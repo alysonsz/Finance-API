@@ -1,8 +1,9 @@
-﻿using Finance.Contracts.Interfaces.Repositories;
+﻿using Finance.Application.Interfaces.Repositories;
+using Finance.Contracts.DTOs;
 using Finance.Contracts.Responses;
 using Finance.Domain.Common;
+using Finance.Domain.Enums;
 using Finance.Domain.Models;
-using Finance.Domain.Models.DTOs;
 using MediatR;
 
 namespace Finance.Application.Features.Transactions.GetByPeriod;
@@ -46,14 +47,10 @@ public class GetByPeriodTransactionHandler(ITransactionRepository transactionRep
             Id = transaction.Id,
             Title = transaction.Title,
             Amount = transaction.Amount,
-            Type = transaction.Type,
+            Type = transaction.Type.ToString(),
             PaidOrReceivedAt = transaction.PaidOrReceivedAt,
             CreatedAt = transaction.CreatedAt,
-            Category = new CategoryDto
-            {
-                Id = transaction.Category.Id,
-                Title = transaction.Category.Title,
-                Description = transaction.Category.Description
-            }
+            CategoryId = transaction.CategoryId,
+            CategoryTitle = transaction.Category?.Title ?? string.Empty
         };
 }

@@ -1,6 +1,6 @@
-﻿using Finance.Contracts.Responses;
+﻿using Finance.Contracts.DTOs;
+using Finance.Contracts.Responses;
 using Finance.Domain.Enums;
-using Finance.Domain.Models.DTOs;
 using MediatR;
 
 namespace Finance.Application.Features.Transactions.Update;

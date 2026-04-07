@@ -1,4 +1,8 @@
-﻿using Finance.Infrastructure.Data;
+﻿using Finance.Application.Interfaces.Repositories;
+using Finance.Contracts.Interfaces.Services;
+using Finance.Infrastructure.Data;
+using Finance.Infrastructure.Repositories;
+using Finance.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -54,6 +58,13 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
 
             builder.UseSetting("ConnectionStrings:WriteDatabase", writeCs);
             builder.UseSetting("ConnectionStrings:ReadDatabase", readCs);
+
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<ITransactionRepository, TransactionRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+
+            services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<ICacheService, CacheService>();
         });
     }
 }

@@ -52,23 +52,14 @@ public class CategoryRepositoryTests : IDisposable
         await using var writeContext = new FinanceWriteDbContext(_writeOptions);
         await using var readContext = new FinanceReadDbContext(_readOptions);
 
-        var user = new User 
-        { 
-            Id = 1, 
-            Name = "Test User", 
-            Email = "test@email.com", 
-            PasswordHash = "123" 
-        };
+        var userResult = User.Create("Test User", "test@email.com", "123");
+        var user = userResult.Value;
 
         await SeedUserAsync(writeContext, user);
 
         var repository = new CategoryRepository(readContext, writeContext);
-        var newCategory = new Category 
-        { 
-            Title = "Lazer", 
-            Description = "Gastos com Lazer", 
-            UserId = user.Id 
-        };
+        var catResult = Category.Create("Lazer", "Gastos com Lazer", user.Id);
+        var newCategory = catResult.Value;
 
         var createdCategory = await repository.CreateAsync(newCategory);
 
@@ -89,22 +80,13 @@ public class CategoryRepositoryTests : IDisposable
         await using var writeContext = new FinanceWriteDbContext(_writeOptions);
         await using var readContext = new FinanceReadDbContext(_readOptions);
 
-        var user = new User 
-        { 
-            Id = 1, 
-            Name = "Test User", 
-            Email = "test@email.com", 
-            PasswordHash = "123" 
-        };
+        var userResult = User.Create("Test User", "test@email.com", "123");
+        var user = userResult.Value;
 
         await SeedUserAsync(writeContext, user);
 
-        var category = new Category 
-        { 
-            Title = "Saúde", 
-            Description = "Gastos com Saúde", 
-            UserId = user.Id 
-        };
+        var catResult = Category.Create("Saúde", "Gastos com Saúde", user.Id);
+        var category = catResult.Value;
 
         writeContext.Categories.Add(category);
         await writeContext.SaveChangesAsync();
@@ -123,13 +105,8 @@ public class CategoryRepositoryTests : IDisposable
         await using var writeContext = new FinanceWriteDbContext(_writeOptions);
         await using var readContext = new FinanceReadDbContext(_readOptions);
 
-        var user = new User 
-        { 
-            Id = 1, 
-            Name = "Test User",
-            Email = "test@email.com", 
-            PasswordHash = "123" 
-        };
+        var userResult = User.Create("Test User", "test@email.com", "123");
+        var user = userResult.Value;
 
         await SeedUserAsync(writeContext, user);
 
@@ -146,29 +123,19 @@ public class CategoryRepositoryTests : IDisposable
         await using var writeContext = new FinanceWriteDbContext(_writeOptions);
         await using var readContext = new FinanceReadDbContext(_readOptions);
 
-        var user1 = new User 
-        { 
-            Id = 1, 
-            Name = "User One", 
-            Email = "user1@email.com", 
-            PasswordHash = "123" 
-        };
+        var user1Result = User.Create("User One", "user1@email.com", "123");
+        var user1 = user1Result.Value;
 
-        var user2 = new User 
-        { 
-            Id = 2, 
-            Name = "User Two", 
-            Email = "user2@email.com", 
-            PasswordHash = "123" 
-        };
+        var user2Result = User.Create("User Two", "user2@email.com", "123");
+        var user2 = user2Result.Value;
 
         await SeedUserAsync(writeContext, user1);
         await SeedUserAsync(writeContext, user2);
 
         writeContext.Categories.AddRange(
-            new Category { Title = "Moradia", UserId = user1.Id },
-            new Category { Title = "Transporte", UserId = user1.Id },
-            new Category { Title = "Alimentação", UserId = user2.Id }
+            Category.Create("Moradia", null, user1.Id).Value,
+            Category.Create("Transporte", null, user1.Id).Value,
+            Category.Create("Alimentação", null, user2.Id).Value
         );
         await writeContext.SaveChangesAsync();
 
@@ -192,21 +159,13 @@ public class CategoryRepositoryTests : IDisposable
         await using var writeContext = new FinanceWriteDbContext(_writeOptions);
         await using var readContext = new FinanceReadDbContext(_readOptions);
 
-        var user = new User 
-        { 
-            Id = 1, 
-            Name = "Test User", 
-            Email = "test@email.com", 
-            PasswordHash = "123" 
-        };
+        var userResult = User.Create("Test User", "test@email.com", "123");
+        var user = userResult.Value;
 
         await SeedUserAsync(writeContext, user);
 
-        var category = new Category 
-        { 
-            Title = "Para Deletar", 
-            UserId = user.Id 
-        };
+        var catResult = Category.Create("Para Deletar", null, user.Id);
+        var category = catResult.Value;
 
         writeContext.Categories.Add(category);
         await writeContext.SaveChangesAsync();
@@ -226,22 +185,13 @@ public class CategoryRepositoryTests : IDisposable
         await using var writeContext = new FinanceWriteDbContext(_writeOptions);
         await using var readContext = new FinanceReadDbContext(_readOptions);
 
-        var user = new User 
-        { 
-            Id = 1, 
-            Name = "Test User", 
-            Email = "test@email.com", 
-            PasswordHash = "123" 
-        };
+        var userResult = User.Create("Test User", "test@email.com", "123");
+        var user = userResult.Value;
 
         await SeedUserAsync(writeContext, user);
 
-        var originalCategory = new Category
-        { 
-            Title = "Original", 
-            Description = "Original Desc", 
-            UserId = user.Id 
-        };
+        var catResult = Category.Create("Original", "Original Desc", user.Id);
+        var originalCategory = catResult.Value;
 
         writeContext.Categories.Add(originalCategory);
         await writeContext.SaveChangesAsync();
@@ -249,7 +199,9 @@ public class CategoryRepositoryTests : IDisposable
         writeContext.Entry(originalCategory).State = EntityState.Detached;
 
         var repository = new CategoryRepository(readContext, writeContext);
-        originalCategory.Title = "Atualizado";
+        
+        var updateResult = originalCategory.Update("Atualizado", "Updated Desc");
+        updateResult.IsSuccess.Should().BeTrue();
 
         await repository.UpdateAsync(originalCategory);
 

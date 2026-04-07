@@ -1,7 +1,9 @@
-﻿using Finance.Contracts.Interfaces.Repositories;
+﻿using Finance.Application.Interfaces.Repositories;
+using Finance.Application.Mappers;
+using Finance.Contracts.DTOs;
 using Finance.Contracts.Responses;
+using Finance.Domain.Enums;
 using Finance.Domain.Models;
-using Finance.Domain.Models.DTOs;
 using MediatR;
 
 namespace Finance.Application.Features.Transactions.GetById;
@@ -22,11 +24,11 @@ public class GetByIdTransactionHandler(ITransactionRepository transactionReposit
                 return new Response<TransactionDto?>(null, 404, "Categoria vinculada à transação não foi encontrada.");
 
             var dto = MapToDto(transaction, category);
-            return new Response<TransactionDto?>(dto);
+            return Response<TransactionDto?>.Success(dto);
         }
         catch
         {
-            return new Response<TransactionDto?>(null, 500, "Não foi possível recuperar a transação.");
+            return Response<TransactionDto?>.Fail("Não foi possível recuperar a transação.");
         }
     }
 
@@ -36,14 +38,10 @@ public class GetByIdTransactionHandler(ITransactionRepository transactionReposit
             Id = transaction.Id,
             Title = transaction.Title,
             Amount = transaction.Amount,
-            Type = transaction.Type,
+            Type = transaction.Type.ToString(),
             PaidOrReceivedAt = transaction.PaidOrReceivedAt,
             CreatedAt = transaction.CreatedAt,
-            Category = new CategoryDto
-            {
-                Id = category.Id,
-                Title = category.Title,
-                Description = category.Description
-            }
+            CategoryId = transaction.CategoryId,
+            CategoryTitle = category.Title
         };
 }

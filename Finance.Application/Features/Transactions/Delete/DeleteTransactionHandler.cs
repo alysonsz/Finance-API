@@ -1,8 +1,8 @@
-﻿using Finance.Application.Mappers;
-using Finance.Contracts.Interfaces.Repositories;
+﻿using Finance.Application.Interfaces.Repositories;
+using Finance.Application.Mappers;
+using Finance.Contracts.DTOs;
 using Finance.Contracts.Responses;
 using Finance.Domain.Models;
-using Finance.Domain.Models.DTOs;
 using MediatR;
 
 namespace Finance.Application.Features.Transactions.Delete;
@@ -25,11 +25,11 @@ public class DeleteTransactionHandler(ITransactionRepository transactionReposito
             await transactionRepository.DeleteAsync(transaction);
 
             var dto = TransactionMapper.ToDto(transaction, category);
-            return new Response<TransactionDto?>(dto, 200, "Transação excluída com sucesso!");
+            return Response<TransactionDto?>.Success(dto, "Transação excluída com sucesso!");
         }
         catch
         {
-            return new Response<TransactionDto?>(null, 500, "Não foi possível excluir a transação.");
+            return Response<TransactionDto?>.Fail("Não foi possível excluir a transação.");
         }
     }
 }

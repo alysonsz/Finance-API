@@ -4,7 +4,7 @@ using Finance.Application.Features.Transactions.GetById;
 using Finance.Application.Features.Transactions.GetByPeriod;
 using Finance.Application.Features.Transactions.GetReport;
 using Finance.Application.Features.Transactions.Update;
-using Finance.Contracts.Interfaces.Repositories;
+using Finance.Application.Interfaces.Repositories;
 using Finance.Domain.Enums;
 using Finance.Domain.Models;
 using FluentAssertions;
@@ -33,7 +33,13 @@ public class TransactionHandlerTests
         };
 
         _catRepoMock.Setup(r => r.GetByIdAsync(command.CategoryId, command.UserId))
-            .ReturnsAsync(new Category { Id = 1, UserId = 123, Title = "Trabalho" });
+            .ReturnsAsync(() =>
+            {
+                var catResult = Category.Create("Trabalho", null, 123);
+                var cat = catResult.Value;
+                cat.GetType().GetProperty("Id")?.SetValue(cat, 1L);
+                return cat;
+            });
 
         _txRepoMock.Setup(r => r.CreateAsync(It.IsAny<Transaction>()))
             .ReturnsAsync((Transaction t) => t);
@@ -59,7 +65,7 @@ public class TransactionHandlerTests
             CategoryId = 99,
             Amount = 10,
             Type = ETransactionType.Deposit,
-            Title = "X"
+            Title = "Teste"
         };
 
         _catRepoMock.Setup(r => r.GetByIdAsync(command.CategoryId, command.UserId))
@@ -84,7 +90,7 @@ public class TransactionHandlerTests
             Id = 99,
             UserId = 123,
             CategoryId = 1,
-            Title = "X",
+            Title = "Teste",
             Amount = 10,
             Type = ETransactionType.Deposit,
             PaidOrReceivedAt = DateTime.UtcNow
@@ -108,24 +114,14 @@ public class TransactionHandlerTests
 
         var command = new DeleteTransactionCommand { Id = 1, UserId = 123 };
 
-        var existingTx = new Transaction
-        {
-            Id = 1,
-            UserId = 123,
-            Title = "A pagar",
-            CategoryId = 10,
-            Amount = -50,
-            Type = ETransactionType.Withdraw,
-            PaidOrReceivedAt = DateTime.UtcNow,
-            CreatedAt = DateTime.UtcNow
-        };
+        var txResult = Transaction.Create("A pagar", 50, ETransactionType.Withdraw, 10, 123, DateTime.UtcNow);
+        var existingTx = txResult.Value;
+        existingTx.GetType().GetProperty("Id")?.SetValue(existingTx, 1L);
+        existingTx.GetType().GetProperty("CreatedAt")?.SetValue(existingTx, DateTime.UtcNow);
 
-        var category = new Category 
-        { 
-            Id = 10,
-            UserId = 123,
-            Title = "Casa" 
-        };
+        var catResult = Category.Create("Casa", null, 123);
+        var category = catResult.Value;
+        category.GetType().GetProperty("Id")?.SetValue(category, 10L);
 
         _txRepoMock.Setup(r => r.GetByIdAsync(command.Id, command.UserId))
             .ReturnsAsync(existingTx);
@@ -186,19 +182,13 @@ public class TransactionHandlerTests
 
         var txs = new List<Transaction>
         {
-            new()
-            {
-                Id = 1, UserId = 123, Title = "Salário", Amount = 5000, Type = ETransactionType.Deposit,
-                PaidOrReceivedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow,
-                Category = new Category { Id = 1, Title = "Trabalho" }
-            },
-            new()
-            {
-                Id = 2, UserId = 123, Title = "Aluguel", Amount = -1500, Type = ETransactionType.Withdraw,
-                PaidOrReceivedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow,
-                Category = new Category { Id = 2, Title = "Casa" }
-            }
+            Transaction.Create("Salário", 5000, ETransactionType.Deposit, 1, 123, DateTime.UtcNow).Value,
+            Transaction.Create("Aluguel", 1500, ETransactionType.Withdraw, 2, 123, DateTime.UtcNow).Value
         };
+        txs[0].GetType().GetProperty("Id")?.SetValue(txs[0], 1L);
+        txs[0].GetType().GetProperty("CreatedAt")?.SetValue(txs[0], DateTime.UtcNow);
+        txs[1].GetType().GetProperty("Id")?.SetValue(txs[1], 2L);
+        txs[1].GetType().GetProperty("CreatedAt")?.SetValue(txs[1], DateTime.UtcNow);
 
         _txRepoMock.Setup(r => r.GetByPeriodAsync(command.UserId, It.IsAny<DateTime>(), It.IsAny<DateTime>(), command.PageNumber, command.PageSize))
             .ReturnsAsync(txs);
@@ -226,9 +216,9 @@ public class TransactionHandlerTests
 
         var txs = new List<Transaction>
         {
-            new() { Amount = -100, Category = new Category { Title = "Casa" } },
-            new() { Amount = -50, Category = new Category { Title = "Casa" } },
-            new() { Amount = 5000, Category = new Category { Title = "Trabalho" } }
+            Transaction.Create("Casa", 100, ETransactionType.Withdraw, 1, 123, DateTime.UtcNow).Value,
+            Transaction.Create("Casa", 50, ETransactionType.Withdraw, 1, 123, DateTime.UtcNow).Value,
+            Transaction.Create("Trabalho", 5000, ETransactionType.Deposit, 2, 123, DateTime.UtcNow).Value
         };
 
         _txRepoMock.Setup(r => r.GetAllByPeriodAsync(command.UserId, It.IsAny<DateTime>(), It.IsAny<DateTime>()))
