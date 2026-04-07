@@ -216,9 +216,9 @@ public class TransactionHandlerTests
 
         var txs = new List<Transaction>
         {
-            Transaction.Create("Casa", 100, ETransactionType.Withdraw, 123, 1, DateTime.UtcNow).Value,
-            Transaction.Create("Casa", 50, ETransactionType.Withdraw, 123, 1, DateTime.UtcNow).Value,
-            Transaction.Create("Trabalho", 5000, ETransactionType.Deposit, 123, 2, DateTime.UtcNow).Value
+            Transaction.Create("Casa", 100, ETransactionType.Withdraw, 1, 123, DateTime.UtcNow).Value,
+            Transaction.Create("Casa", 50, ETransactionType.Withdraw, 1, 123, DateTime.UtcNow).Value,
+            Transaction.Create("Trabalho", 5000, ETransactionType.Deposit, 2, 123, DateTime.UtcNow).Value
         };
 
         _txRepoMock.Setup(r => r.GetAllByPeriodAsync(command.UserId, It.IsAny<DateTime>(), It.IsAny<DateTime>()))
