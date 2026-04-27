@@ -14,7 +14,7 @@ namespace Finance.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("v1/transactions")]
+[Route("api/v1/transactions")]
 public class TransactionsController(IMediator mediator) : ControllerBase
 {
     [HttpPost]

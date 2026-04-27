@@ -13,7 +13,7 @@ namespace Finance.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("v1/categories")]
+[Route("api/v1/categories")]
 public class CategoriesController(IMediator mediator) : ControllerBase
 {
     [HttpPost]
