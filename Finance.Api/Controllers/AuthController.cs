@@ -1,4 +1,4 @@
-﻿using Finance.API.Extensions;
+using Finance.API.Extensions;
 using Finance.Application.Features.Auth.GetProfile;
 using Finance.Application.Features.Auth.Login;
 using Finance.Application.Features.Auth.Register;
@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Finance.Api.Controllers;
 
 [ApiController]
-[Route("v1/auth")]
+[Route("api/v1/auth")]
 public class AuthController(IMediator mediator) : ControllerBase
 {
     [HttpPost("login")]
@@ -55,7 +55,14 @@ public class AuthController(IMediator mediator) : ControllerBase
     {
         var command = new GetProfileCommand();
         var response = await mediator.Send(command);
-        return this.FromResponse(response);
+        return Ok(response); 
+    }
+
+    [Authorize]
+    [HttpGet("test")]
+    public IActionResult TestAuth()
+    {
+        return Ok(new { message = "Autenticação funcionando!", user = User.Identity?.Name });
     }
 
     [Authorize]

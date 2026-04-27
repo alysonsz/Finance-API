@@ -1,4 +1,4 @@
-﻿using Finance.Application.Extensions;
+using Finance.Application.Extensions;
 using Finance.Application.Interfaces.Repositories;
 using Finance.Contracts.Responses;
 using Finance.Contracts.Responses.Auth;
@@ -12,11 +12,13 @@ public class GetProfileHandler(IUserRepository userRepository, IHttpContextAcces
 {
     public async Task<Response<UserProfileResponse?>> Handle(GetProfileCommand request, CancellationToken cancellationToken)
     {
-        var userId = httpContextAccessor.HttpContext?.User.GetUserId();
+        var userClaims = httpContextAccessor.HttpContext?.User;
+        var userIdClaim = userClaims?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                        ?? userClaims?.FindFirst("sub")?.Value;
 
-        if (userId == null)
+        if (string.IsNullOrEmpty(userIdClaim) || !long.TryParse(userIdClaim, out var userId))
         {
-            return Response<UserProfileResponse?>.Fail("User ID not found.");
+            return Response<UserProfileResponse?>.Fail("Identificador do usuário não encontrado no token.");
         }
 
         var user = await userRepository.GetByIdAsync((long)userId);
