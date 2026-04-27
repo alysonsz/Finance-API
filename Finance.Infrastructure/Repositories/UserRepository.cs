@@ -1,12 +1,13 @@
-﻿using Finance.Application.Interfaces.Repositories;
+using Finance.Application.Interfaces.Repositories;
 using Finance.Domain.Models;
 using Finance.Infrastructure.Data;
+using Finance.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 
 namespace Finance.Infrastructure.Repositories;
 
-public class UserRepository(FinanceReadDbContext readContext, FinanceWriteDbContext writeContext)
-    : BaseRepository<User>(writeContext), IUserRepository
+public class UserRepository(FinanceReadDbContext readContext, FinanceWriteDbContext writeContext, IOutboxSignal outboxSignal)
+    : BaseRepository<User>(writeContext, outboxSignal), IUserRepository
 {
     public async Task AddAsync(User user)
     {
@@ -21,14 +22,14 @@ public class UserRepository(FinanceReadDbContext readContext, FinanceWriteDbCont
 
     public async Task<User?> GetByEmailAsync(string email)
     {
-        return await readContext.Users
+        return await writeContext.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
     }
 
     public async Task<User?> GetByIdAsync(long id)
     {
-        return await readContext.Users
+        return await writeContext.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Id == id);
     }

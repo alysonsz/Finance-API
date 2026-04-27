@@ -1,4 +1,4 @@
-﻿using Finance.Application.Interfaces.Repositories;
+using Finance.Application.Interfaces.Repositories;
 using Finance.Contracts.Interfaces.Services;
 using Finance.Contracts.Responses;
 using Finance.Contracts.Responses.Auth;
@@ -13,7 +13,12 @@ public class LoginUserHandler(IUserRepository userRepository, ITokenService toke
     {
         var user = await userRepository.GetByEmailAsync(request.Email);
 
-        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+        if (user == null)
+        {
+            return Response<LoginResponse?>.Fail("Credenciais inválidas.");
+        }
+
+        if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
             return Response<LoginResponse?>.Fail("Credenciais inválidas.");
         }
