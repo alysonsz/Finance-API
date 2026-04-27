@@ -1,12 +1,13 @@
-﻿using Finance.Application.Interfaces.Repositories;
+using Finance.Application.Interfaces.Repositories;
 using Finance.Domain.Models;
 using Finance.Infrastructure.Data;
+using Finance.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 
 namespace Finance.Infrastructure.Repositories;
 
-public class TransactionRepository(FinanceReadDbContext readContext, FinanceWriteDbContext writeContext)
-    : BaseRepository<Transaction>(writeContext), ITransactionRepository
+public class TransactionRepository(FinanceReadDbContext readContext, FinanceWriteDbContext writeContext, IOutboxSignal outboxSignal)
+    : BaseRepository<Transaction>(writeContext, outboxSignal), ITransactionRepository
 {
     public async Task<Transaction?> CreateAsync(Transaction transaction)
     {

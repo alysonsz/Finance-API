@@ -1,30 +1,40 @@
-﻿using Finance.Application.Common.Notifications;
+using Finance.Application.Common.Notifications;
 using Finance.Domain.Models;
 using Finance.Infrastructure.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
 namespace Finance.Infrastructure.SyncHandler;
 
-public class MainSyncHandler(FinanceReadDbContext readContext)
+public class MainSyncHandler(FinanceReadDbContext readContext, Microsoft.Extensions.Logging.ILogger<MainSyncHandler> logger)
     : INotificationHandler<EntitySyncNotification>
 {
     public async Task Handle(EntitySyncNotification notification, CancellationToken ct)
     {
-        switch (notification.EntityType)
+        logger.LogInformation("[SYNC] Recebido {Operation} para {Type}", notification.Operation, notification.EntityType);
+        try 
         {
-            case nameof(Transaction):
-                await SyncEntity<Transaction>(notification, readContext.Transactions, ct);
-                break;
-            case nameof(Category):
-                await SyncEntity<Category>(notification, readContext.Categories, ct);
-                break;
-            case nameof(User):
-                await SyncEntity<User>(notification, readContext.Users, ct);
-                break;
+            switch (notification.EntityType)
+            {
+                case nameof(Transaction):
+                    await SyncEntity<Transaction>(notification, readContext.Transactions, ct);
+                    break;
+                case nameof(Category):
+                    await SyncEntity<Category>(notification, readContext.Categories, ct);
+                    break;
+                case nameof(User):
+                    await SyncEntity<User>(notification, readContext.Users, ct);
+                    break;
+            }
+            await readContext.SaveChangesAsync(ct);
+            logger.LogInformation("[SYNC] Sucesso ao sincronizar {Type}", notification.EntityType);
         }
-        await readContext.SaveChangesAsync(ct);
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "[SYNC] Falha crítica ao sincronizar {Type}", notification.EntityType);
+        }
     }
 
     private async Task SyncEntity<T>(EntitySyncNotification note, DbSet<T> dbSet, CancellationToken ct) where T : class
@@ -33,6 +43,14 @@ public class MainSyncHandler(FinanceReadDbContext readContext)
 
         if (entity == null) 
             return;
+
+        if (entity is User user)
+        {
+            if (string.IsNullOrEmpty(user.PasswordHash))
+                logger.LogWarning("[SYNC] ALERTA: Usuário {Email} está sendo sincronizado SEM SENHA!", user.Email);
+            else
+                logger.LogInformation("[SYNC] Senha do usuário {Email} recebida com sucesso ({Length} chars)", user.Email, user.PasswordHash.Length);
+        }
 
         var idProperty = typeof(T).GetProperty("Id");
         var idValue = idProperty?.GetValue(entity);

@@ -1,14 +1,14 @@
 services:
   finance-api:
+    build:
+      context: .
+      dockerfile: Finance.Api/Dockerfile
     container_name: finance-api
-    image: alysonsz/finance-api:v2.0.0
+    env_file:
+      - .env.local
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__WriteDatabase=Server=finance-sqlserver-db;Database=FinanceDb;User Id=sa;Password=MyStrongPassword123!;TrustServerCertificate=True;Connect Timeout=30;
-      - ConnectionStrings__ReadDatabase=Host=finance-postgre-db;Port=5432;Database=FinanceReadDb;Username=postgres;Password=MyStrongPassword123!;
       - Serilog__WriteTo__0__Args__serverUrl=http://finance-seq:5341
       - ASPNETCORE_DataProtection__KeyManagement__XmlRepository__Directory=/root/.aspnet/DataProtection-Keys
-      - ConnectionStrings__Redis=finance-redis:6379
     ports:
       - "5000:8080"
     depends_on:
@@ -26,15 +26,17 @@ services:
   finance-sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: finance-sqlserver-db
+    env_file:
+      - .env.local
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=MyStrongPassword123!
+      - SA_PASSWORD=${DB_SA_PASSWORD}
     ports:
       - "1433:1433"
     volumes:
       - finance_sql_data:/var/opt/mssql
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'MyStrongPassword123!' -Q 'SELECT 1' -C || exit 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '${DB_SA_PASSWORD}' -Q 'SELECT 1' -C || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 20
@@ -45,9 +47,11 @@ services:
   finance-postgre:
     image: postgres:alpine
     container_name: finance-postgre-db
+    env_file:
+      - .env.local
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=MyStrongPassword123!
+      - POSTGRES_PASSWORD=${DB_POSTGRES_PASSWORD}
       - POSTGRES_DB=FinanceReadDb
     ports:
       - "5432:5432"
@@ -57,9 +61,11 @@ services:
   finance-seq:
     image: datalust/seq:latest
     container_name: finance-seq
+    env_file:
+      - .env.local
     environment:
       - ACCEPT_EULA=Y
-      - SEQ_FIRSTRUN_ADMINPASSWORD=MyStrongPassword123!
+      - SEQ_FIRSTRUN_ADMINPASSWORD=${SEQ_ADMIN_PASSWORD}
     ports:
       - "5341:80" 
     networks:
