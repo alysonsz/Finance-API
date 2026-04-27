@@ -1,4 +1,4 @@
-﻿using Finance.Domain.Models;
+using Finance.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,6 +22,9 @@ public class UserMapping : IEntityTypeConfiguration<User>
         builder.Property(u => u.Email)
                .IsRequired()
                .HasMaxLength(160);
+        
+        builder.HasIndex(u => u.Email)
+               .IsUnique();
 
         builder.Property(u => u.PasswordHash)
                .IsRequired()
